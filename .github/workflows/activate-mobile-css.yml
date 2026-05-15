@@ -1,0 +1,38 @@
+name: Activate mobile CSS
+
+on:
+  push:
+    paths:
+      - 'mobile-overrides.css'
+      - '.github/workflows/activate-mobile-css.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Insert mobile CSS link
+        run: |
+          if ! grep -q 'mobile-overrides.css' index.html; then
+            python3 - <<'PY'
+from pathlib import Path
+p = Path('index.html')
+s = p.read_text(encoding='utf-8')
+needle = '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">'
+insert = needle + '\n<link rel="stylesheet" href="mobile-overrides.css?v=1">'
+if 'mobile-overrides.css' not in s:
+    s = s.replace(needle, insert, 1)
+p.write_text(s, encoding='utf-8')
+PY
+          fi
+      - name: Commit change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Activar responsive móvil SIPDA"
+          git push
