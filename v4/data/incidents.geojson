@@ -1,0 +1,70 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Zona Oci",
+        "type": "Incivisme",
+        "risk": "high",
+        "intensity": 9
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.071, 41.817]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Centre",
+        "type": "Assistencial",
+        "risk": "medium",
+        "intensity": 6
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.066, 41.819]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Zona Sud",
+        "type": "Trànsit",
+        "risk": "low",
+        "intensity": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.063, 41.812]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Eix Comercial",
+        "type": "Seguretat ciutadana",
+        "risk": "medium",
+        "intensity": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.0687, 41.8152]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Front Marítim",
+        "type": "Convivència",
+        "risk": "high",
+        "intensity": 8
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.074, 41.8138]
+      }
+    }
+  ]
+}
