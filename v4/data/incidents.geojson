@@ -11,7 +11,7 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [3.0678, 41.8187]
+        "coordinates": [3.0619, 41.8186]
       }
     },
     {
@@ -24,7 +24,7 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [3.0657, 41.8176]
+        "coordinates": [3.0637, 41.8172]
       }
     },
     {
@@ -37,7 +37,7 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [3.0668, 41.8147]
+        "coordinates": [3.0602, 41.8143]
       }
     },
     {
@@ -50,20 +50,20 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [3.0696, 41.8165]
+        "coordinates": [3.0651, 41.8194]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "zone": "Front Marítim",
+        "zone": "Zona Urbana Interior",
         "type": "Convivència",
         "risk": "high",
         "intensity": 8
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [3.0712, 41.8149]
+        "coordinates": [3.0628, 41.8155]
       }
     }
   ]
