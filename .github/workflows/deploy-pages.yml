@@ -1,0 +1,64 @@
+name: Deploy SIPDA to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Mapbox token
+        env:
+          MAPBOX_PUBLIC_TOKEN: ${{ secrets.MAPBOX_PUBLIC_TOKEN }}
+        run: |
+          if [ -z "$MAPBOX_PUBLIC_TOKEN" ]; then
+            echo "::error::Missing GitHub secret MAPBOX_PUBLIC_TOKEN. Add a restricted Mapbox public token before deploying."
+            exit 1
+          fi
+          if [[ "$MAPBOX_PUBLIC_TOKEN" != pk.* ]]; then
+            echo "::warning::MAPBOX_PUBLIC_TOKEN does not look like a Mapbox public token. It should usually start with pk."
+          fi
+
+      - name: Create SIPDA runtime env
+        env:
+          MAPBOX_PUBLIC_TOKEN: ${{ secrets.MAPBOX_PUBLIC_TOKEN }}
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const token = process.env.MAPBOX_PUBLIC_TOKEN || '';
+          fs.mkdirSync('v4/assets/js', { recursive: true });
+          fs.writeFileSync(
+            'v4/assets/js/env.js',
+            `window.SIPDA_MAPBOX_TOKEN = ${JSON.stringify(token)};\n`
+          );
+          NODE
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
