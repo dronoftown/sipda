@@ -3,108 +3,54 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>SIPDA v6 · Centre d'intel·ligència policial</title>
+  <title>SIPDA v6 · Edició operativa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css" rel="stylesheet">
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/sipda.css">
   <link rel="stylesheet" href="./assets/css/sipda-chat.css">
   <link rel="stylesheet" href="./assets/css/sipda-import.css">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
 </head>
 <body class="is-locked">
   <section class="login-screen" aria-label="Accés a SIPDA">
     <form id="loginForm" class="login-card">
-      <div class="login-brand"><div class="brand-mark">S</div><div><strong>SIPDA</strong><span>Accés restringit</span></div></div>
+      <div class="login-brand"><div class="brand-icon" aria-hidden="true">S</div><div><strong>SIPDA</strong><span>Accés restringit</span></div></div>
       <h1>Sistema Intel·ligent Policial de Direcció i Anàlisi</h1>
-      <p>Accés al centre de comandament i intel·ligència operativa municipal.</p>
+      <p>Introdueix les credencials autoritzades per accedir al centre de comandament.</p>
       <label for="loginUser">Usuari</label>
       <input id="loginUser" name="username" autocomplete="username" required>
       <label for="loginPassword">Contrasenya</label>
       <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
-      <button class="btn primary login-submit" type="submit">Accedir</button>
+      <button class="btn dark login-submit" type="submit">Accedir</button>
       <span id="loginMessage" class="login-message" aria-live="polite"></span>
+      <small>Protecció frontal per a entorn web estàtic.</small>
     </form>
   </section>
 
-  <div class="app-shell">
-    <header class="app-topbar">
-      <a class="product-brand" href="#top" aria-label="SIPDA inici"><div class="brand-mark">S</div><div><strong>SIPDA</strong><span>Command Intelligence</span></div></a>
-      <nav class="top-nav" aria-label="Navegació principal">
-        <a class="active" href="#top">Situació</a>
-        <a href="#mapa">Mapa</a>
-        <a href="#ia">IA</a>
-        <a href="#prediccio">Predicció 48 h</a>
-        <a href="#risc">Risc</a>
-        <a href="#docs">Informes</a>
-      </nav>
-      <div class="top-actions">
-        <button id="pdfImportButton" class="btn primary" type="button"><i data-lucide="upload-cloud"></i>Importar informe</button>
-        <button id="logoutButton" class="btn ghost" type="button"><i data-lucide="log-out"></i>Sortir</button>
-        <input id="pdfImportInput" type="file" accept="application/pdf" hidden>
-      </div>
-    </header>
+  <div class="software-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-icon" aria-hidden="true">S</div><div><strong>SIPDA</strong><span>Intel·ligència policial</span></div></div>
+      <nav class="side-nav" aria-label="Navegació principal"><a class="active" href="#top"><i data-lucide="scan-line"></i><span>Situació</span></a><a href="#mapa"><i data-lucide="map"></i><span>Mapa operatiu</span></a><a href="#ia"><i data-lucide="brain-circuit"></i><span>Intel·ligència</span></a><a href="#prediccio"><i data-lucide="radar"></i><span>Predicció 48 h</span></a><a href="#docs"><i data-lucide="file-text"></i><span>Informes</span></a><a href="#risc"><i data-lucide="shield-check"></i><span>Dispositius</span></a></nav>
+      <div class="unit-card"><span>Unitat activa</span><strong>Policia Local</strong><small>Castell d'Aro · Platja d'Aro · S'Agaró</small></div>
+    </aside>
 
     <main id="top" class="workspace">
-      <section class="hero-row">
-        <div class="hero-copy">
-          <p class="eyebrow">SIPDA v6 · Centre de comandament</p>
-          <h1>Intel·ligència policial municipal en temps real</h1>
-          <p>Lectura executiva, mapa de calor, predicció operativa a 48 hores i recomanacions per al comandament.</p>
-        </div>
-        <div class="command-box">
-          <span>Jornada activa</span>
-          <strong id="currentDatasetLabel">Carregant informe...</strong>
-          <small>Dades anonimitzades · Vista de comandament</small>
-        </div>
-      </section>
+      <header class="topbar"><div><p class="breadcrumb">SIPDA v6 / Espai de comandament / Jornada actual</p><h1>Centre d’intel·ligència municipal</h1></div><div class="top-actions"><div class="command-search"><i data-lucide="search"></i><span>Cercar novetat, zona o informe</span><kbd>⌘K</kbd></div><button class="btn neutral"><i data-lucide="calendar-days"></i>Període</button><button id="pdfImportButton" class="btn dark" type="button"><i data-lucide="upload-cloud"></i>Importar informe</button><button id="logoutButton" class="btn neutral" type="button"><i data-lucide="log-out"></i>Sortir</button></div></header>
 
-      <section class="kpi-grid" aria-label="Indicadors principals">
-        <article class="metric-card"><span>Serveis</span><div><strong>--</strong><em class="trend warning">carregant</em></div></article>
-        <article class="metric-card"><span>Rellevants</span><div><strong>--</strong><em class="trend danger">pendent</em></div></article>
-        <article class="metric-card"><span>Risc operatiu</span><div><strong>--</strong><em class="trend warning">actiu</em></div></article>
-        <article class="metric-card"><span>Previsió 48 h</span><div><strong>--</strong><em class="trend warning">pendent</em></div></article>
-      </section>
+      <section id="resum" class="status-row" aria-label="Resum executiu"><article class="metric-card"><span>Serveis</span><div><strong>--</strong><em class="trend warning">carregant</em></div></article><article class="metric-card"><span>Rellevants</span><div><strong>--</strong><em class="trend danger">pendent</em></div></article><article class="metric-card"><span>Risc operatiu</span><div><strong>--</strong><em class="trend warning">actiu</em></div></article><article class="metric-card"><span>Previsió 48 h</span><div><strong>--</strong><em class="trend warning">pendent</em></div></article></section>
 
       <section class="main-grid">
-        <article id="mapa" class="panel map-panel">
-          <div class="panel-head">
-            <div><h2>Mapa de calor operatiu</h2><p>Zones calentes, punts de risc i pressió territorial dels informes carregats.</p></div>
-            <div class="map-controls" aria-label="Capes del mapa"><button class="active" type="button" data-layer-mode="all">Tot</button><button type="button" data-layer-mode="heat">Calor</button><button type="button" data-layer-mode="points">Punts</button></div>
-          </div>
-          <div class="map-stage">
-            <div id="sipdaMap" class="map-canvas" aria-label="Mapa SIPDA"></div>
-            <div class="map-chip"><strong>Mapa viu</strong><span>Heatmap essencial · Adreces reals</span></div>
-            <div class="map-legend"><span><i class="dot high"></i>Alt</span><span><i class="dot medium"></i>Mitjà</span><span><i class="dot low"></i>Baix</span></div>
-            <div id="mapTokenNotice" class="map-notice" hidden><strong>Mapa no disponible</strong><span>Cal revisar el token de Mapbox.</span></div>
-          </div>
-        </article>
-
-        <aside class="side-stack">
-          <article id="ia" class="panel ai-card">
-            <div class="panel-head compact"><div><h2>Intel·ligència SIPDA</h2><p>Lectura automàtica d'analista.</p></div><span class="state-pill">IA preparada</span></div>
-            <div class="ai-feed"><div class="feed-item"><i class="marker neutral"></i><div><strong>Carregant</strong><span>Esperant dades operatives.</span></div></div></div>
-          </article>
-
-          <article id="prediccio" class="panel prediction-card">
-            <div class="panel-head compact"><div><h2>Predicció 48 h</h2><p>Estimació operativa de risc.</p></div></div>
-            <div id="predictionGrid" class="prediction-grid"><div class="prediction-row"><span>--</span><strong>Sense dades</strong><em>pendent</em></div></div>
-          </article>
-
-          <article id="risc" class="panel risk-card">
-            <div class="panel-head compact"><div><h2>Zones calentes</h2><p>Classificació tàctica.</p></div></div>
-            <div class="zone-list"><div class="zone-row"><span><i class="dot low"></i>Sense dades carregades</span><b>--</b></div></div>
-          </article>
-        </aside>
+        <article id="mapa" class="software-card map-card"><div class="card-header"><div><h2>Mapa operatiu</h2><p>Mapa de calor i punts operatius alimentats amb informes importats.</p></div><div class="segmented-control" aria-label="Capes del mapa"><button class="active" type="button" data-layer-mode="all">Tot</button><button type="button" data-layer-mode="heat">Calor</button><button type="button" data-layer-mode="points">Punts</button></div></div><div class="map-stage"><div id="sipdaMap" class="map-canvas" aria-label="Mapa SIPDA"></div><div class="map-toolbar"><strong>Mapa viu</strong><span>Adreces reals · Risc · Calor operatiu</span></div><div class="map-legend"><span><i class="dot high"></i>Alt</span><span><i class="dot medium"></i>Mitjà</span><span><i class="dot low"></i>Baix</span></div><div id="mapTokenNotice" class="map-notice" hidden><strong>Mapa operatiu</strong><span>Vista alternativa activa.</span></div></div></article>
+        <aside class="right-stack"><article id="ia" class="software-card ai-card"><div class="card-header compact"><div><h2>Intel·ligència SIPDA</h2><p>Lectura executiva generada sobre dades agregades.</p></div><span class="state-pill">IA preparada</span></div><div class="ai-feed"><div class="feed-item"><i class="marker neutral"></i><div><strong>Carregant</strong><span>Esperant dades operatives.</span></div></div></div></article><article id="prediccio" class="software-card prediction-card"><div class="card-header compact"><div><h2>Predicció 48 h</h2><p>Estimació operativa de risc.</p></div></div><div id="predictionGrid" class="prediction-grid"><div class="prediction-row"><span>--</span><strong>Sense dades</strong><em>pendent</em></div></div></article><article id="risc" class="software-card risk-list"><div class="card-header compact"><div><h2>Zones calentes</h2><p>Classificació tàctica.</p></div></div><div class="zone-list"><div class="zone-row"><span><i class="dot low"></i>Sense dades carregades</span><b>--</b></div></div></article></aside>
       </section>
 
-      <section class="lower-grid">
-        <article id="timeline" class="panel table-card"><div class="panel-head compact"><div><h2>Línia temporal operativa</h2><p>Serveis normalitzats de major interès.</p></div></div><div class="timeline-row"><time>--:--</time><span>Esperant dades</span><strong>Sense zona</strong><em class="badge warning">INFO</em></div></article>
-        <article id="docs" class="panel upload-panel"><div class="panel-head compact"><div><h2>Entrada documental</h2><p>Importació local de PDF i novetats policials.</p></div></div><button class="upload-box" type="button"><i data-lucide="file-up"></i><span>Selecciona un informe PDF</span></button><p id="importStatus" class="import-status" data-type="info">Cap importació local activa.</p></article>
-      </section>
+      <section class="bottom-grid"><article id="timeline" class="software-card table-card"><div class="card-header compact"><div><h2>Línia temporal operativa</h2><p>Últimes entrades normalitzades.</p></div></div><div class="timeline-row"><time>--:--</time><span>Esperant dades</span><strong>Sense zona</strong><em class="badge warning">INFO</em></div></article><article class="software-card chart-card"><div class="card-header compact"><div><h2>Tendència setmanal</h2><p>Color només funcional.</p></div></div><svg viewBox="0 0 360 150" role="img" aria-label="Tendència setmanal"><g class="grid-lines"><path d="M20 30H340M20 75H340M20 120H340"></path></g><polyline class="trend-line" points="20,118 72,96 124,104 176,72 228,84 280,48 340,38" fill="none"></polyline><circle class="trend-dot" cx="340" cy="38" r="5"></circle></svg></article><article id="docs" class="software-card upload-panel"><div class="card-header compact"><div><h2>Entrada documental</h2><p>Lectura intel·ligent de PDF i novetats policials.</p></div></div><button class="upload-box" type="button"><i data-lucide="file-up"></i><span>Pujar novetat</span></button><p id="importStatus" class="import-status" data-type="info">Cap importació local activa.</p></article></section>
     </main>
   </div>
 
@@ -114,12 +60,7 @@
       <div class="import-dialog-body">
         <div class="import-drop"><div><i data-lucide="file-up"></i><strong>Selecciona el PDF de novetats</strong><span>Policia Local, Mossos o informe operatiu compatible</span><button id="importChooseFile" class="btn primary" type="button">Seleccionar PDF</button><input id="modalPdfInput" type="file" accept="application/pdf" hidden></div></div>
         <div class="import-progress"><span id="importProgressBar"></span></div>
-        <div class="import-steps">
-          <div class="import-step" data-import-step="upload"><span>01</span><strong>Rebut</strong></div>
-          <div class="import-step" data-import-step="read"><span>02</span><strong>Lectura PDF</strong></div>
-          <div class="import-step" data-import-step="analyze"><span>03</span><strong>Anàlisi</strong></div>
-          <div class="import-step" data-import-step="ready"><span>04</span><strong>Preparat</strong></div>
-        </div>
+        <div class="import-steps"><div class="import-step" data-import-step="upload"><span>01</span><strong>Rebut</strong></div><div class="import-step" data-import-step="read"><span>02</span><strong>Lectura PDF</strong></div><div class="import-step" data-import-step="analyze"><span>03</span><strong>Anàlisi</strong></div><div class="import-step" data-import-step="ready"><span>04</span><strong>Preparat</strong></div></div>
         <p id="importModalStatus" class="import-status-modal" data-type="info">Selecciona un PDF de novetats per iniciar l'anàlisi.</p>
         <div id="importModalSummary" class="import-summary"></div>
       </div>
@@ -127,18 +68,9 @@
     </div>
   </section>
 
-  <div class="floating-chat" id="sipdaFloatingChat" aria-live="polite">
-    <button id="chatToggle" class="chat-launcher" type="button" aria-label="Obrir Assistent IA SIPDA"><i data-lucide="sparkles"></i><span><strong>SIPDA IA</strong><small>Assistent IA</small></span></button>
-    <section id="chatDrawer" class="chat-drawer" aria-label="Assistent IA SIPDA" hidden>
-      <div class="chat-drawer-head"><div><strong>SIPDA IA</strong><span>Assistent local · dades de la web</span></div><button id="chatClose" type="button" aria-label="Tancar assistent"><i data-lucide="x"></i></button></div>
-      <div class="chat-prompts"><button type="button" data-chat-prompt="Fes-me un briefing del servei">Briefing</button><button type="button" data-chat-prompt="Quines són les zones calentes?">Zones</button><button type="button" data-chat-prompt="Quina previsió tenim a 48 hores?">48 h</button><button type="button" data-chat-prompt="Genera un informe executiu">Informe</button></div>
-      <div id="sipdaChatLog" class="chat-log" aria-live="polite"><div class="chat-message assistant"><strong>SIPDA IA actiu</strong><p>Pregunta’m pel briefing, zones calentes, previsió 48 h, serveis rellevants o informe executiu.</p></div></div>
-      <form id="sipdaChatForm" class="chat-form"><input id="sipdaChatInput" placeholder="Pregunta a SIPDA IA..." autocomplete="off"><button class="btn primary" type="submit">Enviar</button></form>
-    </section>
-  </div>
+  <div class="floating-chat" id="sipdaFloatingChat" aria-live="polite"><button id="chatToggle" class="chat-launcher" type="button" aria-label="Obrir Assistent IA SIPDA"><i data-lucide="sparkles"></i><span><strong>SIPDA IA</strong><small>Assistent IA</small></span></button><section id="chatDrawer" class="chat-drawer" aria-label="Assistent IA SIPDA" hidden><div class="chat-drawer-head"><div><strong>SIPDA IA</strong><span>Assistent local · dades de la web</span></div><button id="chatClose" type="button" aria-label="Tancar assistent"><i data-lucide="x"></i></button></div><div class="chat-prompts"><button type="button" data-chat-prompt="Fes-me un briefing del servei">Briefing</button><button type="button" data-chat-prompt="Quines són les zones calentes?">Zones</button><button type="button" data-chat-prompt="Quina previsió tenim a 48 hores?">48 h</button><button type="button" data-chat-prompt="Genera un informe executiu">Informe</button></div><div id="sipdaChatLog" class="chat-log" aria-live="polite"><div class="chat-message assistant"><strong>SIPDA IA actiu</strong><p>Pregunta’m pel briefing, zones calentes, previsió 48 h, serveis rellevants o informe executiu.</p></div></div><form id="sipdaChatForm" class="chat-form"><input id="sipdaChatInput" placeholder="Pregunta a SIPDA IA..." autocomplete="off"><button class="btn primary" type="submit">Enviar</button></form></section></div>
 
   <nav class="mobile-nav" aria-label="Navegació mòbil"><a class="active" href="#top"><i data-lucide="scan-line"></i><span>Inici</span></a><a href="#mapa"><i data-lucide="map"></i><span>Mapa</span></a><a href="#ia"><i data-lucide="brain-circuit"></i><span>IA</span></a><a href="#prediccio"><i data-lucide="radar"></i><span>48 h</span></a><a href="#docs"><i data-lucide="file-text"></i><span>Docs</span></a></nav>
-
   <script src="../v4/assets/js/env.js"></script>
   <script src="../v5/assets/js/sipda-auth.js"></script>
   <script src="./assets/js/sipda-dashboard.js"></script>
