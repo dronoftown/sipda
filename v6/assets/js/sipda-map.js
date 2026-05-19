@@ -2,7 +2,8 @@ const SIPDA_MAP_CONFIG = {
   center: [3.0608, 41.8162],
   zoom: 13.55,
   pitch: 58,
-  bearing: -14
+  bearing: -14,
+  municipalBbox: [2.9700, 41.7600, 3.1250, 41.8750]
 };
 
 const geocodeCache = new Map();
@@ -80,19 +81,43 @@ function bindLayerControls(map) {
   });
 }
 
+function isInsideMunicipalBbox(coordinates) {
+  if (!Array.isArray(coordinates) || coordinates.length < 2) return false;
+  const [lng, lat] = coordinates;
+  const [minLng, minLat, maxLng, maxLat] = SIPDA_MAP_CONFIG.municipalBbox;
+  return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
+}
+
+function normalizeMunicipalAddress(address) {
+  const raw = String(address || "").trim();
+  if (!raw) return "";
+  const hasMunicipality = /platja d['’]?aro|castell d['’]?aro|s['’]?agar[oó]|baix empord[aà]/i.test(raw);
+  if (hasMunicipality) return raw;
+  return `${raw}, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain`;
+}
+
+function selectBestMunicipalFeature(features) {
+  if (!Array.isArray(features)) return null;
+  return features.find((feature) => isInsideMunicipalBbox(feature.center)) || null;
+}
+
 async function geocodeAddress(address, token) {
   if (!address || !token) return null;
-  if (geocodeCache.has(address)) return geocodeCache.get(address);
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${encodeURIComponent(token)}&limit=1&language=ca,es&country=es&proximity=3.0608,41.8162`;
+  const normalizedAddress = normalizeMunicipalAddress(address);
+  if (geocodeCache.has(normalizedAddress)) return geocodeCache.get(normalizedAddress);
+  const bbox = SIPDA_MAP_CONFIG.municipalBbox.join(",");
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(normalizedAddress)}.json?access_token=${encodeURIComponent(token)}&limit=5&language=ca,es&country=es&proximity=3.0608,41.8162&bbox=${bbox}`;
   try {
     const response = await fetch(url, { cache: "no-store" });
     const data = await response.json();
-    const center = data && data.features && data.features[0] ? data.features[0].center : null;
-    geocodeCache.set(address, center);
+    const feature = selectBestMunicipalFeature(data && data.features ? data.features : []);
+    const center = feature ? feature.center : null;
+    if (!center) console.warn("SIPDA geocoding outside municipality ignored", normalizedAddress, data && data.features ? data.features.map((f) => f.center) : []);
+    geocodeCache.set(normalizedAddress, center);
     return center;
   } catch (error) {
-    console.warn("SIPDA geocoding error", address, error);
-    geocodeCache.set(address, null);
+    console.warn("SIPDA geocoding error", normalizedAddress, error);
+    geocodeCache.set(normalizedAddress, null);
     return null;
   }
 }
@@ -103,7 +128,7 @@ async function loadOperationalGeoJSON(token, sourceData) {
 
   for (const item of data.hotspots || []) {
     const geocoded = await geocodeAddress(item.geocodeAddress, token);
-    const coordinates = geocoded || item.coordinates;
+    const coordinates = isInsideMunicipalBbox(geocoded) ? geocoded : isInsideMunicipalBbox(item.coordinates) ? item.coordinates : null;
     if (!coordinates) continue;
     features.push({
       type: "Feature",
