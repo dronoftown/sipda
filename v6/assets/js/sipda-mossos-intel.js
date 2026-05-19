@@ -1,6 +1,6 @@
 function sipdaSourceTypeFromOrigin(origin) {
   const text = normalize(origin || "");
-  if (/mossos|usc|pg\s*-?\s*me|policia de la generalitat|sant feliu de guixols/.test(text)) return "MOSSOS";
+  if (/mossos|usc|policia de la generalitat|sant feliu de guixols/.test(text)) return "MOSSOS";
   if (/policia local|guardia urbana|platjadaro|platja d'aro/.test(text)) return "PL";
   return "ALTRES";
 }
@@ -9,6 +9,19 @@ function sipdaSourceLabel(type, origin) {
   if (type === "MOSSOS") return origin && origin !== "Mossos d'Esquadra" ? origin : "Mossos d'Esquadra · USC Sant Feliu de Guíxols";
   if (type === "PL") return "Policia Local Castell-Platja d'Aro";
   return origin || "Origen no determinat";
+}
+
+function hasMossosHeader(text, origin) {
+  const head = normalize(`${origin || ""} ${String(text || "").slice(0, 2600)}`);
+  const compact = head.replace(/\s+/g, "");
+  return (
+    /novetats\s+amb\s+cronologia/.test(head) ||
+    /generalitat\s+de\s+catalunya/.test(head) ||
+    /direccio\s+general\s+de\s+la\s+policia/.test(head) ||
+    /sala:\s*usc\s+sant\s+feliu/.test(head) ||
+    /ubicacio\s*:\s*usc\s+sant\s+feliu/.test(head) ||
+    compact.includes("uscsantfeliudeguixols")
+  );
 }
 
 function splitMossosBlocks(text) {
@@ -33,7 +46,6 @@ function extractMossosTitle(block) {
 
 function normalizeMossosAddress(address, loc, description) {
   const raw = compactLine(address).replace(/\b0{3,}\d*(\.0)?\b/g, "").replace(/\s+\.0\b/g, "").trim();
-  const area = normalize(`${loc} ${description}`);
   const municipality = "Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain";
   if (!raw || /^s['’]?agaro$/i.test(raw)) return `S'Agaró, ${municipality}`;
   if (/santiago rusi/i.test(raw)) return `Carrer Santiago Rusiñol 2, Platja d'Aro, ${municipality}`;
@@ -111,10 +123,10 @@ function parseMossosServices(text, fileName) {
 const sipdaOriginalParseServices = typeof parseServices === "function" ? parseServices : null;
 parseServices = function parseServices(text, fileName) {
   const origin = detectOrigin(text, fileName);
-  const isMossos = /mossos|usc sant feliu|pg\s*-?\s*me|policia de la generalitat/i.test(`${origin} ${text.slice(0, 1800)}`);
+  const isMossos = hasMossosHeader(text, origin);
   if (isMossos) return parseMossosServices(text, fileName);
   const parsed = sipdaOriginalParseServices ? sipdaOriginalParseServices(text, fileName) : { origin, services: [] };
-  const sourceType = sipdaSourceTypeFromOrigin(parsed.origin);
+  const sourceType = parsed.origin === "Policia Local" || /desti\s*:\s*policia local|secretariapolicia@platjadaro\.com|num\.\s*servei|núm\.\s*servei/i.test(text) ? "PL" : sipdaSourceTypeFromOrigin(parsed.origin);
   const sourceLabel = sipdaSourceLabel(sourceType, parsed.origin);
   parsed.sourceType = sourceType;
   parsed.sourceLabel = sourceLabel;
