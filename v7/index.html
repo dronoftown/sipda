@@ -16,6 +16,7 @@
     document.write('<link rel="stylesheet" href="./assets/css/sipda-v7.css?v=' + window.SIPDA_BUILD + '">');
     document.write('<link rel="stylesheet" href="./assets/css/sipda-police-intel.css?v=' + window.SIPDA_BUILD + '">');
     document.write('<link rel="stylesheet" href="./assets/css/sipda-police-refine.css?v=' + window.SIPDA_BUILD + '">');
+    document.write('<link rel="stylesheet" href="./assets/css/sipda-period-popover.css?v=' + window.SIPDA_BUILD + '">');
   </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -58,7 +59,7 @@
               <i data-lucide="search"></i>
               <span>Cercar novetat, zona o informe</span>
             </button>
-            <button id="periodFilter" class="sipda-period-pill" type="button"><i data-lucide="calendar-days"></i><span>Període</span></button>
+            <button id="periodFilter" class="sipda-period-pill" type="button"><i data-lucide="calendar-days"></i><span id="periodFilterLabel">Període</span></button>
           </div>
           <button id="openImport" class="btn black" type="button"><i data-lucide="upload-cloud"></i>Pujar informe</button>
           <button id="clearHistory" class="btn white" type="button"><i data-lucide="trash-2"></i>Buidar històric</button>
@@ -97,6 +98,19 @@
     </main>
   </div>
 
+  <section id="periodPopover" class="period-popover" hidden aria-label="Seleccionar període">
+    <div class="period-card">
+      <header class="period-head"><div><strong>Seleccionar període</strong><span>Filtra la lectura operativa</span></div><button id="periodClose" class="period-close" type="button" aria-label="Tancar"><i data-lucide="x"></i></button></header>
+      <div class="period-quick"><button class="period-chip active" type="button" data-period-preset="today">Avui</button><button class="period-chip" type="button" data-period-preset="7d">7 dies</button><button class="period-chip" type="button" data-period-preset="30d">30 dies</button><button class="period-chip" type="button" data-period-preset="custom">Manual</button></div>
+      <div class="period-calendar">
+        <div class="period-month"><strong id="periodMonthLabel">Mes</strong><div class="period-nav"><button id="periodPrev" type="button" aria-label="Mes anterior"><i data-lucide="chevron-left"></i></button><button id="periodNext" type="button" aria-label="Mes següent"><i data-lucide="chevron-right"></i></button></div></div>
+        <div class="period-weekdays"><span>Dl</span><span>Dt</span><span>Dc</span><span>Dj</span><span>Dv</span><span>Ds</span><span>Dg</span></div>
+        <div id="periodDays" class="period-days"></div>
+      </div>
+      <footer class="period-actions"><button id="periodCancel" class="period-cancel" type="button">Cancel·lar</button><button id="periodApply" class="period-apply" type="button">Aplicar</button></footer>
+    </div>
+  </section>
+
   <section id="importModal" class="modal" hidden aria-label="Importar informe SIPDA">
     <div class="modal-card">
       <header class="modal-head"><div><strong>Pujar informe</strong><span>Lectura intel·ligent local SIPDA v7</span></div><button id="closeImport" type="button" aria-label="Tancar"><i data-lucide="x"></i></button></header>
@@ -119,6 +133,7 @@
     document.write('<script src="./assets/js/sipda-v7-zones-v6.js?v=' + window.SIPDA_BUILD + '"><\/script>');
     document.write('<script src="./assets/js/sipda-v7-street-normalizer.js?v=' + window.SIPDA_BUILD + '"><\/script>');
     document.write('<script src="./assets/js/sipda-v7-forecast-48h.js?v=' + window.SIPDA_BUILD + '"><\/script>');
+    document.write('<script src="./assets/js/sipda-period-popover.js?v=' + window.SIPDA_BUILD + '"><\/script>');
   </script>
 </body>
 </html>
