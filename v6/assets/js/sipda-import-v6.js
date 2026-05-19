@@ -2,7 +2,8 @@ let pendingSipdaDataset = null;
 let pendingSipdaFileName = "";
 
 const SIPDA_PDF_JS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-const SIPDA_PDF_WORKER_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const SIPDA_PDF_WORKER_BASE = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js";
+const SIPDA_PDF_WORKER_FALLBACK = `${SIPDA_PDF_WORKER_BASE}/3.11.174/pdf.worker.min.js`;
 
 function setImportStatus(message, type = "info") {
   const status = document.getElementById("importStatus");
@@ -57,10 +58,17 @@ function closeImportModal() {
   document.body.classList.remove("import-modal-open");
 }
 
+function getPdfWorkerSrc(pdfjs) {
+  const version = String(pdfjs && pdfjs.version ? pdfjs.version : "");
+  if (version.startsWith("4.")) return `${SIPDA_PDF_WORKER_BASE}/${version}/pdf.worker.min.mjs`;
+  if (version.startsWith("3.")) return `${SIPDA_PDF_WORKER_BASE}/${version}/pdf.worker.min.js`;
+  return SIPDA_PDF_WORKER_FALLBACK;
+}
+
 function configurePdfWorker(pdfjs) {
   if (!pdfjs) return null;
   if (pdfjs.GlobalWorkerOptions) {
-    pdfjs.GlobalWorkerOptions.workerSrc = SIPDA_PDF_WORKER_SRC;
+    pdfjs.GlobalWorkerOptions.workerSrc = getPdfWorkerSrc(pdfjs);
   }
   return pdfjs;
 }
