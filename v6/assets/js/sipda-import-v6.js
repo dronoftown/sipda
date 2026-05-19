@@ -119,7 +119,11 @@ function normalize(value) {
   return String(value || "")
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[·•]/g, " ")
+    .replace(/[^a-z0-9@.\s'_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function compactLine(value) {
@@ -127,9 +131,26 @@ function compactLine(value) {
 }
 
 function detectOrigin(text, fileName) {
-  const source = normalize(`${fileName} ${text.slice(0, 2200)}`);
-  if (/mossos|pg-me|policia de la generalitat/.test(source)) return "Mossos d'Esquadra";
-  if (/policia local|guardia urbana|ajuntament|num\. servei|nivell prioritat/.test(source)) return "Policia Local";
+  const full = `${fileName} ${text}`;
+  const source = normalize(full);
+  const compact = source.replace(/\s+/g, "");
+
+  if (
+    /usc\s+sant\s+feliu\s+de\s+guixols/.test(source) ||
+    compact.includes("uscsantfeliudeguixols") ||
+    (/\busc\b/.test(source) && /sant\s+feliu\s+de\s+guixols/.test(source)) ||
+    (/unitat\s+de\s+seguretat\s+ciutadana/.test(source) && /sant\s+feliu\s+de\s+guixols/.test(source))
+  ) {
+    return "USC Sant Feliu de Guíxols";
+  }
+
+  if (/mossos|pg\s*-?\s*me|policia de la generalitat|cos de mossos/.test(source) || compact.includes("mossosdesquadra") || compact.includes("policiadelageneralitat")) {
+    return "Mossos d'Esquadra";
+  }
+
+  if (/policia local|guardia urbana|ajuntament|num\. servei|nivell prioritat|desti policia local|destino policia local|secretariapolicia@platjadaro\.com/.test(source) || compact.includes("policialocal")) {
+    return "Policia Local";
+  }
   return "Origen no determinat";
 }
 
