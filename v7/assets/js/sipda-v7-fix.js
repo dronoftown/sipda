@@ -1,4 +1,4 @@
-/* SIPDA v7 hotfix: robust block splitting, satellite map, modal layering and post-login map sizing. */
+/* SIPDA v7 hotfix: robust origin detection, block splitting, satellite map, modal layering and post-login map sizing. */
 (function injectModalLayerFix(){
   const old=document.getElementById('sipda-v7-modal-map-fix');
   if(old)old.remove();
@@ -18,6 +18,58 @@
   document.head.appendChild(style);
 })();
 
+function sipdaCompact(value){return norm(String(value||'')).replace(/\s+/g,'')}
+function sipdaHeaderText(text,file){return norm(`${file||''}\n${String(text||'').slice(0,6500)}`)}
+
+function detect(text,file){
+  const head=sipdaHeaderText(text,file);
+  const full=norm(`${file||''}\n${text||''}`);
+  const compact=sipdaCompact(`${file||''}\n${text||''}`);
+
+  const plStrong=(
+    /\bpolicia\s+local\b/.test(head)||
+    /\bpolicia\s+local\s+castell/.test(head)||
+    /\bcastell\s*-?\s*platja\s+d\s*aro\b/.test(head)||
+    /\bcastell\s+d\s*aro\s+platja\s+d\s*aro\b/.test(head)||
+    /\bajuntament\s+de\s+castell\b/.test(head)||
+    /\bajuntament\s+de\s+platja\b/.test(head)||
+    /\bnum\.?\s+servei\b/.test(head)||
+    /\bnum\.?\s+servicio\b/.test(head)||
+    /\bn[uú]m\.?\s+servei\b/.test(head)||
+    /\bdesti\s*:?\s*policia\s+local\b/.test(full)||
+    /\bdestino\s*:?\s*policia\s+local\b/.test(full)||
+    /secretariapolicia@platjadaro\.com/.test(full)||
+    compact.includes('policialocal')||
+    compact.includes('castellplatjadaro')||
+    compact.includes('castellplatjadaroisagaro')
+  );
+
+  if(plStrong)return 'PL';
+
+  const mossosStrong=(
+    /\bmossos\s+d[' ]?esquadra\b/.test(head)||
+    /\bpolicia\s+de\s+la\s+generalitat\b/.test(head)||
+    /\bcos\s+de\s+mossos\b/.test(head)||
+    /\bpg\s*-?\s*me\b/.test(head)||
+    /\busc\s+sant\s+feliu\s+de\s+guixols\b/.test(head)||
+    /\bunitat\s+de\s+seguretat\s+ciutadana\b/.test(head)&&/sant\s+feliu\s+de\s+guixols/.test(head)||
+    compact.includes('uscsantfeliudeguixols')||
+    compact.includes('mossosdesquadra')||
+    compact.includes('policiadelageneralitat')
+  );
+
+  if(mossosStrong)return 'MOSSOS';
+
+  const plSignals=[/\bpolicia\s+local\b/,/\bajuntament\b/,/\bvia\s+1\b/,/\bdia\s+i\s+hora\b/,/\bnivell\s+prioritat\b/,/\brequeriment\b/,/\bnoticia\b/,/\bnoticia\b/];
+  const meSignals=[/\bmossos\b/,/\busc\b/,/\bcodi\s*:\s*\d{5,}\b/,/\btitular\s*:/,/\bresponsable\s*:/,/\bcronologia\s+dels\s+fets\b/];
+  const plScore=plSignals.reduce((n,re)=>n+(re.test(full)?1:0),0);
+  const meScore=meSignals.reduce((n,re)=>n+(re.test(full)?1:0),0);
+
+  if(plScore>=2&&plScore>=meScore)return 'PL';
+  if(meScore>=2)return 'MOSSOS';
+  return 'ALTRES';
+}
+
 function blocks(text,type){
   const cleaned=String(text||'').replace(/\r/g,'\n').trim();
   if(type==='MOSSOS'){
@@ -28,11 +80,48 @@ function blocks(text,type){
     if(mossos.length)return mossos;
   }
   const byService=cleaned
-    .split(/(?=\n?\s*(?:Dia i hora:|Núm\. Servei:|Num\. Servei:|Servei:|Incident:))/i)
+    .split(/(?=\n?\s*(?:Dia i hora:|Núm\. Servei:|Núm\.\s*Servei:|Num\. Servei:|Num\.\s*Servicio:|Servei:|Servicio:|Incident:))/i)
     .map(part=>part.trim())
     .filter(part=>part.length>80);
   if(byService.length)return byService;
   return cleaned.split(/\n\s*\n/g).map(part=>part.trim()).filter(part=>part.length>80);
+}
+
+const sipdaV7OriginalParse=typeof parse==='function'?parse:null;
+function parse(text,file){
+  const type=detect(text,file);
+  const sourceType=type==='MOSSOS'?'MOSSOS':type==='PL'?'PL':'ALTRES';
+  const parts=blocks(text,sourceType);
+  const services=parts.map((block,index)=>parseBlock(block,index,sourceType)).filter(Boolean).map(item=>({
+    ...item,
+    sourceType,
+    sourceLabel:sName(sourceType),
+    sourceBadge:sourceType==='PL'?'PL':sourceType==='MOSSOS'?'ME':'--'
+  }));
+
+  if(!services.length&&sipdaV7OriginalParse){
+    const fallback=sipdaV7OriginalParse(text,file);
+    fallback.source.sourceType=sourceType;
+    fallback.source.origin=sName(sourceType);
+    fallback.services=(fallback.services||[]).map(item=>({...item,sourceType,sourceLabel:sName(sourceType),sourceBadge:sourceType==='PL'?'PL':sourceType==='MOSSOS'?'ME':'--'}));
+    fallback.hotspots=fallback.services.filter(item=>item.priority!=='low');
+    fallback.timeline=[...fallback.services].sort((a,b)=>a.time.localeCompare(b.time)).slice(0,60);
+    fallback.summary=summary(fallback.services,1);
+    fallback.sourceStats=stats(fallback.services);
+    return fallback;
+  }
+
+  const dataset={
+    key:`${file}-${Date.now()}-${services.length}`,
+    addedAt:new Date().toISOString(),
+    source:{document:file,origin:sName(sourceType),sourceType,reports:1,privacy:'Importació local. El PDF no puja a servidor.'},
+    services,
+    hotspots:services.filter(item=>item.priority!=='low'),
+    timeline:[...services].sort((a,b)=>a.time.localeCompare(b.time)).slice(0,60)
+  };
+  dataset.summary=summary(services,1);
+  dataset.sourceStats=stats(services);
+  return dataset;
 }
 
 function sipdaFixMapSize(reason){
