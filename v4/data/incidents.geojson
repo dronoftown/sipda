@@ -4,66 +4,85 @@
     {
       "type": "Feature",
       "properties": {
-        "zone": "Zona Oci",
-        "type": "Incivisme",
+        "zone": "Marina Port d'Aro",
+        "type": "Concentración operativa",
         "risk": "high",
+        "levelLabel": "ALTO",
         "intensity": 9
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [3.0619, 41.8186]
+        "coordinates": [3.0508, 41.8098]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "zone": "Centre",
-        "type": "Assistencial",
+        "zone": "Marina Port d'Aro",
+        "type": "Movilidad / afluencia",
         "risk": "medium",
+        "levelLabel": "MEDIO",
         "intensity": 6
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [3.0637, 41.8172]
+        "coordinates": [3.0522, 41.8112]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "zone": "Zona Sud",
-        "type": "Trànsit",
-        "risk": "low",
-        "intensity": 4
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [3.0602, 41.8143]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "zone": "Eix Comercial",
-        "type": "Seguretat ciutadana",
-        "risk": "medium",
-        "intensity": 7
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [3.0651, 41.8194]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "zone": "Zona Urbana Interior",
-        "type": "Convivència",
+        "zone": "Cala la Rubina",
+        "type": "Presión estacional",
         "risk": "high",
+        "levelLabel": "ALTO",
         "intensity": 8
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [3.0628, 41.8155]
+        "coordinates": [3.0574, 41.8158]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Cala la Rubina",
+        "type": "Incidencia convivencia",
+        "risk": "low",
+        "levelLabel": "BAJO",
+        "intensity": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.0588, 41.8171]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Rotonda del súper",
+        "type": "Tráfico / cruce conflictivo",
+        "risk": "medium",
+        "levelLabel": "MEDIO",
+        "intensity": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.0619, 41.8149]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Rotonda del súper",
+        "type": "Punto de control",
+        "risk": "low",
+        "levelLabel": "BAJO",
+        "intensity": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.0606, 41.8160]
       }
     }
   ]
