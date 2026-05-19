@@ -10,6 +10,7 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/sipda.css">
   <link rel="stylesheet" href="./assets/css/sipda-chat.css">
+  <link rel="stylesheet" href="./assets/css/sipda-import.css">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
@@ -107,23 +108,32 @@
     </main>
   </div>
 
+  <section id="importModal" class="import-modal" aria-label="Pujar novetat" hidden>
+    <div class="import-dialog">
+      <div class="import-dialog-head"><div><strong>Pujar novetat</strong><span>Importació intel·ligent SIPDA</span></div><button id="importModalClose" type="button" aria-label="Tancar importació"><i data-lucide="x"></i></button></div>
+      <div class="import-dialog-body">
+        <div class="import-drop"><div><i data-lucide="file-up"></i><strong>Selecciona el PDF de novetats</strong><span>Policia Local, Mossos o informe operatiu compatible</span><button id="importChooseFile" class="btn primary" type="button">Seleccionar PDF</button><input id="modalPdfInput" type="file" accept="application/pdf" hidden></div></div>
+        <div class="import-progress"><span id="importProgressBar"></span></div>
+        <div class="import-steps">
+          <div class="import-step" data-import-step="upload"><span>01</span><strong>Rebut</strong></div>
+          <div class="import-step" data-import-step="read"><span>02</span><strong>Lectura PDF</strong></div>
+          <div class="import-step" data-import-step="analyze"><span>03</span><strong>Anàlisi</strong></div>
+          <div class="import-step" data-import-step="ready"><span>04</span><strong>Preparat</strong></div>
+        </div>
+        <p id="importModalStatus" class="import-status-modal" data-type="info">Selecciona un PDF de novetats per iniciar l'anàlisi.</p>
+        <div id="importModalSummary" class="import-summary"></div>
+      </div>
+      <div class="import-dialog-actions"><button id="importCancel" class="btn ghost" type="button">Cancel·lar</button><button id="importUpdatePanel" class="btn primary" type="button" disabled>Actualitzar panell</button></div>
+    </div>
+  </section>
+
   <div class="floating-chat" id="sipdaFloatingChat" aria-live="polite">
     <button id="chatToggle" class="chat-launcher" type="button" aria-label="Obrir Assistent IA SIPDA"><i data-lucide="sparkles"></i><span><strong>SIPDA IA</strong><small>Assistent IA</small></span></button>
     <section id="chatDrawer" class="chat-drawer" aria-label="Assistent IA SIPDA" hidden>
       <div class="chat-drawer-head"><div><strong>SIPDA IA</strong><span>Assistent local · dades de la web</span></div><button id="chatClose" type="button" aria-label="Tancar assistent"><i data-lucide="x"></i></button></div>
-      <div class="chat-prompts">
-        <button type="button" data-chat-prompt="Fes-me un briefing del servei">Briefing</button>
-        <button type="button" data-chat-prompt="Quines són les zones calentes?">Zones</button>
-        <button type="button" data-chat-prompt="Quina previsió tenim a 48 hores?">48 h</button>
-        <button type="button" data-chat-prompt="Genera un informe executiu">Informe</button>
-      </div>
-      <div id="sipdaChatLog" class="chat-log" aria-live="polite">
-        <div class="chat-message assistant"><strong>SIPDA IA actiu</strong><p>Pregunta’m pel briefing, zones calentes, previsió 48 h, serveis rellevants o informe executiu.</p></div>
-      </div>
-      <form id="sipdaChatForm" class="chat-form">
-        <input id="sipdaChatInput" placeholder="Pregunta a SIPDA IA..." autocomplete="off">
-        <button class="btn primary" type="submit">Enviar</button>
-      </form>
+      <div class="chat-prompts"><button type="button" data-chat-prompt="Fes-me un briefing del servei">Briefing</button><button type="button" data-chat-prompt="Quines són les zones calentes?">Zones</button><button type="button" data-chat-prompt="Quina previsió tenim a 48 hores?">48 h</button><button type="button" data-chat-prompt="Genera un informe executiu">Informe</button></div>
+      <div id="sipdaChatLog" class="chat-log" aria-live="polite"><div class="chat-message assistant"><strong>SIPDA IA actiu</strong><p>Pregunta’m pel briefing, zones calentes, previsió 48 h, serveis rellevants o informe executiu.</p></div></div>
+      <form id="sipdaChatForm" class="chat-form"><input id="sipdaChatInput" placeholder="Pregunta a SIPDA IA..." autocomplete="off"><button class="btn primary" type="submit">Enviar</button></form>
     </section>
   </div>
 
