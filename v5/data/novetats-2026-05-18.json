@@ -1,0 +1,183 @@
+{
+  "source": {
+    "document": "NOVETATS (SENSE IMATGES)_Novetats (18).pdf",
+    "dateRange": "2026-05-18/2026-05-19",
+    "origin": "Policia Local",
+    "privacy": "Datos personales anonimizados para vista de inteligencia"
+  },
+  "summary": {
+    "totalServices": 39,
+    "relevantServices": 2,
+    "riskLevel": "MEDIO",
+    "mainPattern": "Jornada ordinaria con pico operativo por inundaciones, seguridad ciudadana y vigilancia preventiva nocturna.",
+    "executiveRead": "El día presenta una carga relevante en tres bloques: incidencia meteorológica con cortes y gestión de vía pública, dos servicios relevantes de seguridad/asistencial y actividad preventiva nocturna en sectores sensibles.",
+    "recommendation": "Mantener refuerzo preventivo en Sector 1 y zonas comerciales, seguimiento de puntos inundables y control de movilidad/VMP en ejes principales."
+  },
+  "kpis": {
+    "trafico": 7,
+    "seguridadCiudadana": 6,
+    "asistencial": 5,
+    "anomaliasViaPublica": 4,
+    "medioAmbiente": 2,
+    "vigilanciaPlanificada": 10,
+    "serviciosMaterialPerimetro": 5
+  },
+  "hotspots": [
+    {
+      "id": "hot-156233",
+      "serviceId": "156233",
+      "time": "2026-05-18T14:50:00",
+      "title": "Incidencias por inundaciones",
+      "category": "ANOMALIAS_VIA_PUBLICA",
+      "risk": "high",
+      "levelLabel": "ALTO",
+      "intensity": 10,
+      "zone": "Av. Platja d'Aro / Sector 3",
+      "coordinates": [3.0645, 41.8146],
+      "summary": "Cortes de vía, afectaciones por lluvia, embornales, piedras en calzada y reapertura posterior.",
+      "privacyLevel": "AGREGADO"
+    },
+    {
+      "id": "hot-156227",
+      "serviceId": "156227",
+      "time": "2026-05-18T12:21:00",
+      "title": "Baralla / detenido por señalamiento",
+      "category": "SEGURIDAD_CIUDADANA",
+      "risk": "high",
+      "levelLabel": "ALTO",
+      "intensity": 9,
+      "zone": "Av. Onze de Setembre",
+      "coordinates": [3.0648, 41.8183],
+      "summary": "Intervención por pelea, identificación de implicados, señalamiento vigente y arma eléctrica intervenida.",
+      "privacyLevel": "ANONIMIZADO"
+    },
+    {
+      "id": "hot-156225",
+      "serviceId": "156225",
+      "time": "2026-05-18T11:25:00",
+      "title": "Menor escapado de centro escolar",
+      "category": "POLICIA_ASISTENCIAL",
+      "risk": "high",
+      "levelLabel": "ALTO",
+      "intensity": 8,
+      "zone": "Escola Els Estanys",
+      "coordinates": [3.0608, 41.8177],
+      "summary": "Búsqueda de menor escapado del centro; posteriormente localizado con familia.",
+      "privacyLevel": "ANONIMIZADO"
+    },
+    {
+      "id": "hot-156228",
+      "serviceId": "156228",
+      "time": "2026-05-18T12:58:00",
+      "title": "Furt en establecimiento comercial",
+      "category": "SOPORTE_JUDICIAL",
+      "risk": "medium",
+      "levelLabel": "MEDIO",
+      "intensity": 6,
+      "zone": "Av. S'Agaró / zona comercial",
+      "coordinates": [3.0674, 41.8189],
+      "summary": "Sustracción de monedero en comercio con posible disponibilidad de imágenes.",
+      "privacyLevel": "ANONIMIZADO"
+    },
+    {
+      "id": "hot-156238",
+      "serviceId": "156238",
+      "time": "2026-05-18T18:41:00",
+      "title": "Gual ocupado",
+      "category": "TRAFICO",
+      "risk": "medium",
+      "levelLabel": "MEDIO",
+      "intensity": 6,
+      "zone": "C. Llémana",
+      "coordinates": [3.0622, 41.8158],
+      "summary": "Vehículo dificultando salida de gual; activación y anulación posterior de grúa, denuncia al vehículo.",
+      "privacyLevel": "ANONIMIZADO"
+    },
+    {
+      "id": "hot-156239",
+      "serviceId": "156239",
+      "time": "2026-05-18T19:05:00",
+      "title": "Árbol caído con afectación al tráfico",
+      "category": "ANOMALIAS_VIA_PUBLICA",
+      "risk": "medium",
+      "levelLabel": "MEDIO",
+      "intensity": 7,
+      "zone": "Camí Vell de Santa Cristina",
+      "coordinates": [3.0399, 41.8192],
+      "summary": "Árbol atravesando la vía, activación de Bomberos y reapertura posterior.",
+      "privacyLevel": "AGREGADO"
+    },
+    {
+      "id": "hot-156240",
+      "serviceId": "156240",
+      "time": "2026-05-18T19:20:00",
+      "title": "Persona creando inseguridad",
+      "category": "SEGURIDAD_CIUDADANA",
+      "risk": "medium",
+      "levelLabel": "MEDIO",
+      "intensity": 6,
+      "zone": "Urbanització La Gavina",
+      "coordinates": [3.0526, 41.8018],
+      "summary": "Aviso de vigilante por persona generando inseguridad; marcha en dirección Platja d'Aro.",
+      "privacyLevel": "ANONIMIZADO"
+    },
+    {
+      "id": "hot-156243",
+      "serviceId": "156243",
+      "time": "2026-05-18T21:50:00",
+      "title": "Intento de robo en domicilio",
+      "category": "SEGURIDAD_CIUDADANA",
+      "risk": "high",
+      "levelLabel": "ALTO",
+      "intensity": 8,
+      "zone": "C. Corrons",
+      "coordinates": [3.0562, 41.8091],
+      "summary": "Daños en acceso a domicilio tras intento de robo; se programa seguimiento preventivo nocturno.",
+      "privacyLevel": "ANONIMIZADO"
+    },
+    {
+      "id": "hot-156246",
+      "serviceId": "156246",
+      "time": "2026-05-18T23:45:00",
+      "title": "Control conjunto con PG-ME",
+      "category": "CONTROL_SEGURIDAD",
+      "risk": "medium",
+      "levelLabel": "MEDIO",
+      "intensity": 6,
+      "zone": "Rotonda acceso Politur",
+      "coordinates": [3.0504, 41.8243],
+      "summary": "Control de seguridad ciudadana con resultado de una denuncia por ITV.",
+      "privacyLevel": "ANONIMIZADO"
+    },
+    {
+      "id": "hot-156247",
+      "serviceId": "156247",
+      "time": "2026-05-19T00:33:00",
+      "title": "Vigilancia preventiva por robos violentos",
+      "category": "VIGILANCIA_PLANIFICADA",
+      "risk": "medium",
+      "levelLabel": "MEDIO",
+      "intensity": 6,
+      "zone": "Sector 1 / Platja d'Aro",
+      "coordinates": [3.0664, 41.8178],
+      "summary": "Vigilancia preventiva nocturna por robos con violencia e intimidación.",
+      "privacyLevel": "AGREGADO"
+    }
+  ],
+  "timeline": [
+    {"time":"11:25","serviceId":"156225","title":"Menor escapado de centro escolar","zone":"Escola Els Estanys","risk":"high","result":"Servicio efectuado"},
+    {"time":"12:21","serviceId":"156227","title":"Baralla / detenido por señalamiento","zone":"Av. Onze de Setembre","risk":"high","result":"Servicio efectuado"},
+    {"time":"12:58","serviceId":"156228","title":"Furt en establecimiento comercial","zone":"Av. S'Agaró","risk":"medium","result":"Servicio efectuado"},
+    {"time":"14:50","serviceId":"156233","title":"Incidencias por inundaciones","zone":"Av. Platja d'Aro","risk":"high","result":"Servicio efectuado / anotación"},
+    {"time":"19:05","serviceId":"156239","title":"Árbol caído con afectación al tráfico","zone":"Camí Vell Santa Cristina","risk":"medium","result":"Servicio efectuado"},
+    {"time":"21:50","serviceId":"156243","title":"Intento de robo en domicilio","zone":"C. Corrons","risk":"high","result":"Anotación y seguimiento"},
+    {"time":"23:45","serviceId":"156246","title":"Control conjunto con PG-ME","zone":"Rotonda acceso Politur","risk":"medium","result":"Servicio efectuado"},
+    {"time":"00:33","serviceId":"156247","title":"Vigilancia preventiva por robos violentos","zone":"Sector 1","risk":"medium","result":"Servicio efectuado"}
+  ],
+  "privacyRules": [
+    "No mostrar nombres personales en vista mando.",
+    "No mostrar DNI/NIE, teléfonos ni matrículas en dashboard.",
+    "Mapear por zona o punto operativo agregado cuando la dirección sea sensible.",
+    "Mantener datos completos solo en módulo restringido con control de acceso."
+  ]
+}
