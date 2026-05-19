@@ -1,12 +1,12 @@
 /* SIPDA v7 · dedicated reader autoloader */
 (function(){
-  const BUILD='reader-autoloader-2026-05-20';
+  const BUILD='reader-autoloader-pl-first-2026-05-20';
   function load(src){return new Promise(function(ok){if(document.querySelector('script[src*="'+src+'"]')){ok();return;}const s=document.createElement('script');s.src='./assets/js/readers/'+src+'?v='+(window.SIPDA_BUILD||Date.now());s.onload=ok;s.onerror=ok;document.head.appendChild(s);});}
   function attachRouter(){
     const oldHandle=typeof handle==='function'?handle:(window.handle||null);
     function choose(text,file){
-      if(window.SIPDA_READER_ME&&window.SIPDA_READER_ME.detect(text,file))return window.SIPDA_READER_ME;
       if(window.SIPDA_READER_PL&&window.SIPDA_READER_PL.detect(text,file))return window.SIPDA_READER_PL;
+      if(window.SIPDA_READER_ME&&window.SIPDA_READER_ME.detect(text,file))return window.SIPDA_READER_ME;
       return null;
     }
     if(oldHandle){
