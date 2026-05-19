@@ -8,19 +8,34 @@ function riskClass(risk) {
 }
 
 function riskLabel(risk) {
-  if (risk === "high") return "ALTO";
-  if (risk === "medium") return "MEDIO";
-  if (risk === "low") return "BAJO";
+  if (risk === "high") return "ALT";
+  if (risk === "medium") return "MITJÀ";
+  if (risk === "low") return "BAIX";
   return "INFO";
+}
+
+function getKpi(data, key, fallback = 0) {
+  return data.kpis?.[key] ?? fallback;
+}
+
+function renderDashboard(data) {
+  window.SIPDA_OPERATIONAL_DATA = data;
+  setTopbar(data);
+  setMetricCards(data);
+  setMapHeader(data);
+  setAiPanel(data);
+  setRiskList(data);
+  setTimeline(data);
+  setUploadPanel(data);
 }
 
 function setMetricCards(data) {
   const cards = document.querySelectorAll(".metric-card");
   const values = [
-    ["Servicios", data.summary.totalServices, `${data.summary.relevantServices} relevantes`, "danger"],
-    ["Tráfico", data.kpis.trafico, "campañas / disciplina", "warning"],
-    ["Seguridad", data.kpis.seguridadCiudadana, "actividad sensible", "danger"],
-    ["Riesgo operativo", data.summary.riskLevel, "activo", "warning"]
+    ["Serveis", data.summary.totalServices, `${data.summary.relevantServices} rellevants`, "danger"],
+    ["Trànsit", getKpi(data, "transit", getKpi(data, "trafico")), "campanyes / disciplina", "warning"],
+    ["Seguretat", getKpi(data, "seguretatCiutadana", getKpi(data, "seguridadCiudadana")), "activitat sensible", "danger"],
+    ["Risc operatiu", data.summary.riskLevel, "actiu", "warning"]
   ];
 
   cards.forEach((card, index) => {
@@ -34,26 +49,26 @@ function setTopbar(data) {
   const breadcrumb = document.querySelector(".breadcrumb");
   const title = document.querySelector(".topbar h1");
   if (breadcrumb) breadcrumb.textContent = `SIPDA / Novetats policials / ${data.source.dateRange}`;
-  if (title) title.textContent = "Lectura operativa real del servicio";
+  if (title) title.textContent = "Lectura operativa real del servei";
 }
 
-function setMapHeader(data) {
+function setMapHeader() {
   const mapHeader = document.querySelector(".map-card .card-header p");
   const mapToolbar = document.querySelector(".map-toolbar span");
-  if (mapHeader) mapHeader.textContent = "Mapa alimentado con novedades reales anonimizadas del parte policial.";
-  if (mapToolbar) mapToolbar.textContent = "Inundaciones · Seguridad · Tráfico · Vigilancias";
+  if (mapHeader) mapHeader.textContent = "Mapa alimentat amb novetats reals anonimitzades del comunicat policial.";
+  if (mapToolbar) mapToolbar.textContent = "Adreces reals · Risc · Calor operatiu";
 }
 
 function setAiPanel(data) {
   const subtitle = document.querySelector(".ai-card .card-header p");
   const feed = document.querySelector(".ai-feed");
-  if (subtitle) subtitle.textContent = "Resumen generado desde el PDF policial real.";
+  if (subtitle) subtitle.textContent = "Resum generat des del PDF policial real.";
   if (!feed) return;
 
   feed.innerHTML = `
-    <div class="feed-item"><i class="marker danger"></i><div><strong>Lectura ejecutiva</strong><span>${data.summary.executiveRead}</span></div></div>
-    <div class="feed-item"><i class="marker warning"></i><div><strong>Patrón principal</strong><span>${data.summary.mainPattern}</span></div></div>
-    <div class="feed-item"><i class="marker neutral"></i><div><strong>Recomendación</strong><span>${data.summary.recommendation}</span></div></div>
+    <div class="feed-item"><i class="marker danger"></i><div><strong>Lectura executiva</strong><span>${data.summary.executiveRead}</span></div></div>
+    <div class="feed-item"><i class="marker warning"></i><div><strong>Patró principal</strong><span>${data.summary.mainPattern}</span></div></div>
+    <div class="feed-item"><i class="marker neutral"></i><div><strong>Recomanació</strong><span>${data.summary.recommendation}</span></div></div>
   `;
 }
 
@@ -62,12 +77,10 @@ function setRiskList(data) {
   if (!list) return;
 
   const header = list.querySelector(".card-header");
-  const topHotspots = [...data.hotspots]
-    .sort((a, b) => b.intensity - a.intensity)
-    .slice(0, 5);
+  const topHotspots = [...data.hotspots].sort((a, b) => b.intensity - a.intensity).slice(0, 5);
 
   const rows = topHotspots.map((item) => {
-    return `<div class="zone-row"><span><i class="dot ${item.risk}"></i>${item.zone}</span><b>${item.levelLabel}</b></div>`;
+    return `<div class="zone-row"><span><i class="dot ${item.risk}"></i>${item.displayAddress || item.zone}</span><b>${item.levelLabel || riskLabel(item.risk)}</b></div>`;
   }).join("");
 
   list.innerHTML = `${header ? header.outerHTML : ""}${rows}`;
@@ -89,27 +102,23 @@ function setUploadPanel(data) {
   const uploadTitle = document.querySelector(".upload-panel h2");
   const uploadText = document.querySelector(".upload-panel p");
   const buttonLabel = document.querySelector(".upload-box span");
-  if (uploadTitle) uploadTitle.textContent = "Documento interpretado";
-  if (uploadText) uploadText.textContent = `${data.source.document} · datos anonimizados para vista de mando.`;
-  if (buttonLabel) buttonLabel.textContent = "PDF convertido a inteligencia operativa";
+  if (uploadTitle) uploadTitle.textContent = "Document interpretat";
+  if (uploadText) uploadText.textContent = `${data.source.document} · dades anonimitzades per a vista de comandament.`;
+  if (buttonLabel) buttonLabel.textContent = "PDF convertit a intel·ligència operativa";
 }
 
 async function initSipdaDashboard() {
   try {
     const response = await fetch(`${SIPDA_DATA_URL}?v=${Date.now()}`, { cache: "no-store" });
     const data = await response.json();
-    window.SIPDA_OPERATIONAL_DATA = data;
-
-    setTopbar(data);
-    setMetricCards(data);
-    setMapHeader(data);
-    setAiPanel(data);
-    setRiskList(data);
-    setTimeline(data);
-    setUploadPanel(data);
+    renderDashboard(data);
   } catch (error) {
     console.warn("SIPDA dashboard data not loaded", error);
   }
 }
+
+window.addEventListener("sipda:data-updated", (event) => {
+  if (event.detail) renderDashboard(event.detail);
+});
 
 document.addEventListener("DOMContentLoaded", initSipdaDashboard);
