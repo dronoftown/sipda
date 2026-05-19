@@ -1,6 +1,6 @@
 /* SIPDA v7 parser auto · lector PL / ME con localización real */
 (function(){
-  const BUILD='pdf-reader-localitzacio-via1-2026-05-20';
+  const BUILD='pdf-reader-localitzacio-via1-joinroad-2026-05-20';
 
   function N(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9@.\s:_\/-]/g,' ').replace(/\s+/g,' ').trim()}
   function C(v){return N(v).replace(/\s+/g,'')}
@@ -11,11 +11,13 @@
   const STOP='Dia i hora|N[uú]m\\.?\\s*Servei|Num\\.?\\s*Servei|Servei|Incident|Requeriment|Nivell|Prioritat|Via\\s*1|Via\\s*2|Adre[cç]a|Lloc detall|Lloc|Ubicaci[oó]|Zona|Sector|Municipi|Localitat|Titular|Responsable|Inici|Final|Loc|Resultats|Cronologia|Not[ií]cia|Noticia|Descripci[oó]|Descripcio|Hora inici|Unitat|Estad[ií]stica|Codi';
   const stopRe=new RegExp('\\s+(?:'+STOP+')\\s*:?','i');
   function isLabel(v){return new RegExp('^(?:'+STOP+')\\b','i').test(String(v||'').trim())}
+  function isRoadPrefix(v){return /^(?:AV|AV\.|AVDA|AVDA\.|AVGDA|AVGDA\.|CL|CL\.|C|C\.|CR|CR\.|PL|PL\.|PÇA|PCA|PS|PS\.|PG|PG\.|CTRA|CTRA\.|RBLA|RBLA\.|PTGE|PTGE\.|TRAV|TRAV\.|CAMI|CAMÍ)$/i.test(one(v))}
   function cutValue(v){
     v=one(v);
     const m=v.search(stopRe);
     return (m>0?v.slice(0,m):v).replace(/^[:\-\s]+/,'').trim();
   }
+  function goodStreetPart(v){v=cutValue(v);return v&&!isLabel(v)&&!/^(LOCALITZACI[ÓO]|ESTAD[ÍI]STICA|REQUERIMENT)$/i.test(v)}
   function fieldAny(block,labels){
     const lines=String(block||'').replace(/\r/g,'\n').split('\n').map(x=>x.replace(/[ \t]+/g,' ').trim()).filter(Boolean);
     for(let i=0;i<lines.length;i++){
@@ -24,21 +26,25 @@
         const m=lines[i].match(re);
         if(!m)continue;
         const same=cutValue(m[1]||'');
-        if(same&&!isLabel(same))return same;
+        if(same&&!isLabel(same)&&!isRoadPrefix(same))return same;
         const parts=[];
-        for(let j=i+1;j<Math.min(lines.length,i+6);j++){
+        if(isRoadPrefix(same))parts.push(same);
+        for(let j=i+1;j<Math.min(lines.length,i+8);j++){
           if(isLabel(lines[j]))break;
-          parts.push(lines[j]);
-          if(parts.join(' ').length>100)break;
+          const part=cutValue(lines[j]);
+          if(goodStreetPart(part))parts.push(part);
+          if(parts.join(' ').length>120)break;
+          if(parts.length>=3)break;
         }
-        if(parts.length)return cutValue(parts.join(' '));
+        const joined=cutValue(parts.join(' '));
+        if(joined&&!isRoadPrefix(joined))return joined;
       }
     }
     const flat=one(block);
     for(const label of labels){
-      const re=new RegExp('(?:LOCALITZACI[ÓO]\\s+)?'+label+'\\s*:?\\s*([\\s\\S]{1,160})','i');
+      const re=new RegExp('(?:LOCALITZACI[ÓO]\\s+)?'+label+'\\s*:?\\s*([\\s\\S]{1,220})','i');
       const m=flat.match(re);
-      if(m&&m[1])return cutValue(m[1]);
+      if(m&&m[1]){const value=cutValue(m[1]);if(value&&!isRoadPrefix(value))return value;}
     }
     return'';
   }
