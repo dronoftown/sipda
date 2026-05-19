@@ -9,9 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css" rel="stylesheet">
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/sipda.css">
-  <link rel="stylesheet" href="./assets/css/sipda-chat.css">
-  <link rel="stylesheet" href="./assets/css/sipda-import.css">
+  <link rel="stylesheet" href="./assets/css/sipda.css?v=22">
+  <link rel="stylesheet" href="./assets/css/sipda-chat.css?v=22">
+  <link rel="stylesheet" href="./assets/css/sipda-import.css?v=22">
+  <link rel="stylesheet" href="./assets/css/sipda-premium-fix.css?v=22">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -70,17 +71,18 @@
   <div class="floating-chat" id="sipdaFloatingChat" aria-live="polite"><button id="chatToggle" class="chat-launcher" type="button" aria-label="Obrir Assistent IA SIPDA"><i data-lucide="sparkles"></i><span><strong>SIPDA IA</strong><small>Assistent IA</small></span></button><section id="chatDrawer" class="chat-drawer" aria-label="Assistent IA SIPDA" hidden><div class="chat-drawer-head"><div><strong>SIPDA IA</strong><span>Assistent local · dades de la web</span></div><button id="chatClose" type="button" aria-label="Tancar assistent"><i data-lucide="x"></i></button></div><div class="chat-prompts"><button type="button" data-chat-prompt="Fes-me un briefing del servei">Briefing</button><button type="button" data-chat-prompt="Quines són les zones calentes?">Zones</button><button type="button" data-chat-prompt="Quina previsió tenim a 48 hores?">48 h</button><button type="button" data-chat-prompt="Genera un informe executiu">Informe</button></div><div id="sipdaChatLog" class="chat-log" aria-live="polite"><div class="chat-message assistant"><strong>SIPDA IA actiu</strong><p>Pregunta’m pel briefing, zones calentes, previsió 48 h, serveis rellevants o informe executiu.</p></div></div><form id="sipdaChatForm" class="chat-form"><input id="sipdaChatInput" placeholder="Pregunta a SIPDA IA..." autocomplete="off"><button class="btn primary" type="submit">Enviar</button></form></section></div>
 
   <nav class="mobile-nav" aria-label="Navegació mòbil"><a class="active" href="#top"><i data-lucide="scan-line"></i><span>Inici</span></a><a href="#mapa"><i data-lucide="map"></i><span>Mapa</span></a><a href="#ia"><i data-lucide="brain-circuit"></i><span>IA</span></a><a href="#prediccio"><i data-lucide="radar"></i><span>48 h</span></a><a href="#docs"><i data-lucide="file-text"></i><span>Docs</span></a></nav>
-  <script src="../v4/assets/js/env.js"></script>
-  <script src="../v5/assets/js/sipda-auth.js"></script>
-  <script src="./assets/js/sipda-dashboard.js?v=17"></script>
-  <script src="./assets/js/sipda-map.js?v=17"></script>
-  <script src="./assets/js/sipda-map-resize-fix.js?v=17"></script>
-  <script src="./assets/js/sipda-import-v6.js?v=17"></script>
-  <script src="./assets/js/sipda-origin-fix.js?v=17"></script>
-  <script src="./assets/js/sipda-mossos-intel.js?v=17"></script>
-  <script src="./assets/js/sipda-history.js?v=17"></script>
-  <script src="./assets/js/sipda-source-ui.js?v=17"></script>
-  <script src="./assets/js/sipda-chat.js?v=17"></script>
-  <script src="./assets/js/sipda-navigation.js?v=17"></script>
+  <script src="../v4/assets/js/env.js?v=22"></script>
+  <script src="../v5/assets/js/sipda-auth.js?v=22"></script>
+  <script src="./assets/js/sipda-dashboard.js?v=22"></script>
+  <script src="./assets/js/sipda-map.js?v=22"></script>
+  <script src="./assets/js/sipda-map-resize-fix.js?v=22"></script>
+  <script src="./assets/js/sipda-import-v6.js?v=22"></script>
+  <script src="./assets/js/sipda-origin-fix.js?v=22"></script>
+  <script src="./assets/js/sipda-mossos-intel.js?v=22"></script>
+  <script src="./assets/js/sipda-history.js?v=22"></script>
+  <script src="./assets/js/sipda-source-ui.js?v=22"></script>
+  <script src="./assets/js/sipda-v6-stabilizer.js?v=22"></script>
+  <script src="./assets/js/sipda-chat.js?v=22"></script>
+  <script src="./assets/js/sipda-navigation.js?v=22"></script>
 </body>
 </html>
