@@ -53,7 +53,15 @@
       <header class="topbar">
         <div><p>SIPDA / v7 / Command center municipal</p><h1>Centre d'intel·ligència operativa</h1></div>
         <div class="top-actions">
-          <button id="openImport" class="btn black" type="button"><i data-lucide="upload-cloud"></i>Importar informe</button>
+          <div class="quick-tools" aria-label="Cerca i filtre">
+            <label class="command-search" for="commandSearch">
+              <i data-lucide="search"></i>
+              <input id="commandSearch" type="search" placeholder="Cercar novetat, zona o informe">
+              <kbd>⌘K</kbd>
+            </label>
+            <button id="periodFilter" class="period-filter" type="button"><i data-lucide="calendar-days"></i><span>Període</span></button>
+          </div>
+          <button id="openImport" class="btn black" type="button"><i data-lucide="upload-cloud"></i>Pujar informe</button>
           <button id="clearHistory" class="btn white" type="button"><i data-lucide="trash-2"></i>Buidar històric</button>
           <button id="logoutButton" class="btn white" type="button"><i data-lucide="log-out"></i>Sortir</button>
         </div>
@@ -84,9 +92,9 @@
       </section>
 
       <section class="bottom-grid">
-        <article id="timeline" class="panel timeline-panel"><div class="panel-head compact"><div><h2>Línia temporal operativa</h2><p>Entrades normalitzades dels informes carregats.</p></div></div><div id="timelineRows" class="timeline-list"></div></article>
         <article id="docs" class="panel docs-panel"><div class="panel-head compact"><div><h2>Entrada documental</h2><p>Importació local de PDF. El fitxer no puja a servidor.</p></div></div><button id="openImportAlt" class="upload-tile" type="button"><i data-lucide="file-up"></i><span>Pujar informe PDF</span></button><p id="historyStatus" class="status-text">Històric local v7 pendent de dades.</p></article>
       </section>
+      <div id="timeline" hidden aria-hidden="true"><div id="timelineRows" class="timeline-list"></div></div>
     </main>
   </div>
 
