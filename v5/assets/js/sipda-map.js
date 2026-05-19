@@ -1,6 +1,6 @@
 const SIPDA_MAP_CONFIG = {
-  center: [3.0568, 41.8138],
-  zoom: 14.05,
+  center: [3.0608, 41.8162],
+  zoom: 13.55,
   pitch: 62,
   bearing: -16
 };
@@ -24,9 +24,9 @@ function buildPopupHTML(properties) {
 
   return `
     <div class="sipda-popup">
-      <strong>${properties.zone || "Zona operativa"}</strong>
-      <span>${properties.type || "Incidencia"} · Riesgo ${riskLabel}</span>
-      <em>Intensidad ${properties.intensity || 0}/10</em>
+      <strong>${properties.title || properties.zone || "Zona operativa"}</strong>
+      <span>${properties.zone || "Zona"} · Riesgo ${riskLabel}</span>
+      <em>${properties.summary || "Servicio agregado SIPDA"}</em>
     </div>
   `;
 }
@@ -92,6 +92,33 @@ function bindLayerControls(map) {
   });
 }
 
+async function loadOperationalGeoJSON() {
+  const response = await fetch("./data/novetats-2026-05-18.json", { cache: "no-store" });
+  const data = await response.json();
+
+  return {
+    type: "FeatureCollection",
+    features: data.hotspots.map((item) => ({
+      type: "Feature",
+      properties: {
+        id: item.id,
+        serviceId: item.serviceId,
+        title: item.title,
+        zone: item.zone,
+        risk: item.risk,
+        levelLabel: item.levelLabel,
+        intensity: item.intensity,
+        category: item.category,
+        summary: item.summary
+      },
+      geometry: {
+        type: "Point",
+        coordinates: item.coordinates
+      }
+    }))
+  };
+}
+
 function initSipdaMap() {
   if (!window.mapboxgl) {
     showMapTokenNotice("No se ha podido cargar Mapbox GL JS.");
@@ -118,12 +145,13 @@ function initSipdaMap() {
 
   map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "bottom-right");
 
-  map.on("load", () => {
+  map.on("load", async () => {
     addTerrain3D(map);
+    const operationalData = await loadOperationalGeoJSON();
 
     map.addSource("sipda-incidents", {
       type: "geojson",
-      data: "./data/incidents.geojson"
+      data: operationalData
     });
 
     map.addLayer({
@@ -133,9 +161,9 @@ function initSipdaMap() {
       maxzoom: 18,
       paint: {
         "heatmap-weight": ["interpolate", ["linear"], ["get", "intensity"], 0, 0, 10, 1.45],
-        "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 10, 1.25, 14, 2.55, 16, 3.25],
-        "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 10, 42, 14, 82, 16, 112],
-        "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.70, 14, 0.82, 16, 0.70],
+        "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 10, 1.05, 14, 2.35, 16, 3.05],
+        "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 10, 34, 14, 68, 16, 96],
+        "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.62, 14, 0.78, 16, 0.68],
         "heatmap-color": [
           "interpolate",
           ["linear"],
@@ -155,7 +183,7 @@ function initSipdaMap() {
       type: "circle",
       source: "sipda-incidents",
       paint: {
-        "circle-radius": ["interpolate", ["linear"], ["get", "intensity"], 1, 7, 10, 11],
+        "circle-radius": ["interpolate", ["linear"], ["get", "intensity"], 1, 6, 10, 12],
         "circle-color": ["match", ["get", "risk"], "high", "#ef4444", "medium", "#f59e0b", "low", "#16a34a", "#111111"],
         "circle-stroke-color": "rgba(255,255,255,0.94)",
         "circle-stroke-width": 2,
