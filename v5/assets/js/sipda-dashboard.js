@@ -14,28 +14,6 @@ function riskLabel(risk) {
   return "INFO";
 }
 
-function normalizeRiskLevel(level) {
-  const value = String(level || "").trim().toLowerCase();
-  if (["alt", "alto", "high"].includes(value)) return "high";
-  if (["mitjà", "mitja", "medio", "medium"].includes(value)) return "medium";
-  if (["baix", "bajo", "low"].includes(value)) return "low";
-  return "medium";
-}
-
-function riskScore(risk) {
-  if (risk === "high") return 84;
-  if (risk === "medium") return 58;
-  if (risk === "low") return 24;
-  return 50;
-}
-
-function riskColor(risk) {
-  if (risk === "high") return "#ef4444";
-  if (risk === "medium") return "#f59e0b";
-  if (risk === "low") return "#16a34a";
-  return "#ffffff";
-}
-
 function getKpi(data, key, fallback = 0) {
   return data.kpis?.[key] ?? fallback;
 }
@@ -51,54 +29,18 @@ function renderDashboard(data) {
   setUploadPanel(data);
 }
 
-function renderRiskGauge(level) {
-  const risk = normalizeRiskLevel(level);
-  const label = riskLabel(risk);
-  const score = riskScore(risk);
-  const color = riskColor(risk);
-
-  return `
-    <div class="risk-black-module risk-${risk}" style="--risk-color:${color};--risk-score:${score}%;">
-      <div class="risk-black-head">
-        <span>Risc operatiu</span>
-        <em>${score}/100</em>
-      </div>
-      <div class="risk-black-main">
-        <strong>${label}</strong>
-        <small>Nivell actual</small>
-      </div>
-      <div class="risk-progress-panel" aria-label="Nivell de risc ${label}">
-        <div class="risk-progress-track">
-          <div class="risk-progress-fill"></div>
-        </div>
-        <div class="risk-progress-scale">
-          <span>BAIX</span>
-          <span>MITJÀ</span>
-          <span>ALT</span>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
 function setMetricCards(data) {
   const cards = document.querySelectorAll(".metric-card");
   const values = [
     ["Serveis", data.summary.totalServices, `${data.summary.relevantServices} rellevants`, "danger"],
     ["Trànsit", getKpi(data, "transit", getKpi(data, "trafico")), "campanyes / disciplina", "warning"],
-    ["Seguretat", getKpi(data, "seguretatCiutadana", getKpi(data, "seguridadCiudadana")), "activitat sensible", "danger"]
+    ["Seguretat", getKpi(data, "seguretatCiutadana", getKpi(data, "seguridadCiudadana")), "activitat sensible", "danger"],
+    ["Risc operatiu", data.summary.riskLevel, "actiu", "warning"]
   ];
 
   cards.forEach((card, index) => {
-    if (index === 3) {
-      card.classList.add("risk-meter-card");
-      card.innerHTML = renderRiskGauge(data.summary.riskLevel);
-      return;
-    }
-
     const item = values[index];
     if (!item) return;
-    card.classList.remove("risk-meter-card");
     card.innerHTML = `<span>${item[0]}</span><div><strong>${item[1]}</strong><em class="trend ${item[3]}">${item[2]}</em></div>`;
   });
 }
