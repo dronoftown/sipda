@@ -1,6 +1,8 @@
 let pendingSipdaDataset = null;
 let pendingSipdaFileName = "";
 
+const SIPDA_PDF_WORKER_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
 function setImportStatus(message, type = "info") {
   const status = document.getElementById("importStatus");
   const modalStatus = document.getElementById("importModalStatus");
@@ -54,12 +56,17 @@ function closeImportModal() {
   document.body.classList.remove("import-modal-open");
 }
 
+function configurePdfWorker(pdfjs) {
+  if (!pdfjs || !pdfjs.GlobalWorkerOptions) return pdfjs;
+  pdfjs.GlobalWorkerOptions.workerSrc = SIPDA_PDF_WORKER_SRC;
+  return pdfjs;
+}
+
 async function getPdfJs() {
-  if (window.pdfjsLib) return window.pdfjsLib;
+  if (window.pdfjsLib) return configurePdfWorker(window.pdfjsLib);
   const module = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
-  module.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
-  window.pdfjsLib = module;
-  return module;
+  window.pdfjsLib = configurePdfWorker(module);
+  return window.pdfjsLib;
 }
 
 function cleanText(value) {
