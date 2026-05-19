@@ -14,6 +14,25 @@ function riskLabel(risk) {
   return "INFO";
 }
 
+function normalizeRiskLevel(level) {
+  const value = String(level || "").trim().toLowerCase();
+  if (["alt", "alto", "high"].includes(value)) return "high";
+  if (["mitjà", "mitja", "medio", "medium"].includes(value)) return "medium";
+  if (["baix", "bajo", "low"].includes(value)) return "low";
+  return "medium";
+}
+
+function riskGaugeValue(risk) {
+  if (risk === "high") return 86;
+  if (risk === "medium") return 56;
+  if (risk === "low") return 24;
+  return 50;
+}
+
+function riskGaugeRotation(risk) {
+  return -90 + (riskGaugeValue(risk) / 100) * 180;
+}
+
 function getKpi(data, key, fallback = 0) {
   return data.kpis?.[key] ?? fallback;
 }
@@ -29,18 +48,53 @@ function renderDashboard(data) {
   setUploadPanel(data);
 }
 
+function renderRiskGauge(level) {
+  const risk = normalizeRiskLevel(level);
+  const label = riskLabel(risk);
+  const rotation = riskGaugeRotation(risk);
+
+  return `
+    <div class="risk-gauge-card risk-${risk}">
+      <div class="risk-gauge-copy">
+        <span>Risc operatiu</span>
+        <strong>${label}</strong>
+        <em class="trend ${riskClass(risk)}">nivell actiu</em>
+      </div>
+      <div class="risk-gauge" aria-label="Nivell de risc ${label}">
+        <svg viewBox="0 0 160 94" role="img">
+          <path class="gauge-track" d="M22 78 A58 58 0 0 1 138 78" />
+          <path class="gauge-low" d="M22 78 A58 58 0 0 1 60 27" />
+          <path class="gauge-medium" d="M60 27 A58 58 0 0 1 100 27" />
+          <path class="gauge-high" d="M100 27 A58 58 0 0 1 138 78" />
+          <g class="gauge-needle" style="transform: rotate(${rotation}deg); transform-origin: 80px 78px;">
+            <line x1="80" y1="78" x2="80" y2="31" />
+          </g>
+          <circle class="gauge-hub" cx="80" cy="78" r="5" />
+        </svg>
+        <div class="gauge-scale"><span>Baix</span><span>Mitjà</span><span>Alt</span></div>
+      </div>
+    </div>
+  `;
+}
+
 function setMetricCards(data) {
   const cards = document.querySelectorAll(".metric-card");
   const values = [
     ["Serveis", data.summary.totalServices, `${data.summary.relevantServices} rellevants`, "danger"],
     ["Trànsit", getKpi(data, "transit", getKpi(data, "trafico")), "campanyes / disciplina", "warning"],
-    ["Seguretat", getKpi(data, "seguretatCiutadana", getKpi(data, "seguridadCiudadana")), "activitat sensible", "danger"],
-    ["Risc operatiu", data.summary.riskLevel, "actiu", "warning"]
+    ["Seguretat", getKpi(data, "seguretatCiutadana", getKpi(data, "seguridadCiudadana")), "activitat sensible", "danger"]
   ];
 
   cards.forEach((card, index) => {
+    if (index === 3) {
+      card.classList.add("risk-meter-card");
+      card.innerHTML = renderRiskGauge(data.summary.riskLevel);
+      return;
+    }
+
     const item = values[index];
     if (!item) return;
+    card.classList.remove("risk-meter-card");
     card.innerHTML = `<span>${item[0]}</span><div><strong>${item[1]}</strong><em class="trend ${item[3]}">${item[2]}</em></div>`;
   });
 }
