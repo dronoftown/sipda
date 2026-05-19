@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SIPDA · UI Kit V2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=1" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">▥</div>
+        <div><strong>SIPDA</strong><span>Intel·ligència Operativa</span></div>
+      </div>
+      <nav class="side-nav">
+        <a class="active"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+        <a><i data-lucide="file-text"></i><span>Novetats</span></a>
+        <a><i data-lucide="map"></i><span>Mapa</span></a>
+        <a><i data-lucide="brain-circuit"></i><span>Anàlisi IA</span></a>
+        <a><i data-lucide="trending-up"></i><span>Predicció</span></a>
+        <a><i data-lucide="shield-check"></i><span>Dispositius</span></a>
+        <a><i data-lucide="settings"></i><span>Config</span></a>
+      </nav>
+      <div class="police-box">Policia Local de<br>Castell d'Aro,<br>Platja d'Aro i S'Agaró<div class="squares"><span></span><span></span><span></span><span></span></div></div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div><p class="eyebrow">CENTRE OPERATIU</p><h1>Dashboard Executiu</h1><span>Visió general del municipi i predicció operativa</span></div>
+        <div class="top-actions"><button class="btn ghost"><i data-lucide="calendar-days"></i>26 Mai – 1 Jun</button><button class="btn primary"><i data-lucide="upload"></i>Pujar PDF</button></div>
+      </header>
+
+      <section class="hero-grid">
+        <article class="card state-card">
+          <div class="card-title">Estat del municipi</div>
+          <p class="muted">Tensió operativa global</p>
+          <div class="gauge"><span>TENSIÓ<br>MODERADA</span></div>
+          <small>Actualitzat avui · 08:30</small>
+        </article>
+        <section class="kpi-grid">
+          <article class="kpi-card"><i data-lucide="siren"></i><span>Incidents</span><strong>214</strong><em class="up">+18%</em></article>
+          <article class="kpi-card"><i data-lucide="heart-pulse"></i><span>Assistencials</span><strong>97</strong><em class="up">+11%</em></article>
+          <article class="kpi-card"><i data-lucide="megaphone"></i><span>Incivisme</span><strong>156</strong><em class="up">+22%</em></article>
+          <article class="kpi-card"><i data-lucide="shield-alert"></i><span>Seguretat</span><strong>63</strong><em class="down">-5%</em></article>
+          <article class="kpi-card"><i data-lucide="car"></i><span>Trànsit</span><strong>58</strong><em class="up">+8%</em></article>
+        </section>
+      </section>
+
+      <section class="main-grid">
+        <div class="left-stack">
+          <article class="card map-card">
+            <div class="card-row"><div><div class="card-title">Mapa operatiu del municipi</div><p class="muted">Heatmap territorial i pressió de servei</p></div><button class="chip">Calor d’incidències</button></div>
+            <div class="map-visual">
+              <svg viewBox="0 0 900 460" preserveAspectRatio="none"><rect width="900" height="460" fill="#eaf4ff"/><path d="M590 0 C560 70 585 115 545 175 C500 240 530 295 470 360 C430 405 415 435 390 460 L900 460 L900 0Z" fill="#c9e7ff"/><g stroke="#d7e2ee" stroke-width="2"><path d="M0 70 L620 210"/><path d="M40 0 L650 320"/><path d="M0 180 L540 100"/><path d="M70 460 L520 120"/><path d="M185 0 L370 460"/><path d="M320 0 L220 460"/><path d="M0 305 L610 360"/><path d="M95 0 L820 260"/></g><circle cx="640" cy="250" r="100" fill="rgba(239,43,45,.55)"/><circle cx="565" cy="220" r="120" fill="rgba(245,158,11,.52)"/><circle cx="410" cy="250" r="92" fill="rgba(250,204,21,.42)"/><circle cx="280" cy="270" r="86" fill="rgba(22,163,74,.30)"/></svg>
+              <div class="map-label a">Zona centre<br><b>Tensió moderada</b></div><div class="map-label b">Zona oci<br><b class="danger">Tensió alta</b></div><div class="legend">Baixa<span></span>Alta</div>
+            </div>
+          </article>
+
+          <section class="triple-grid">
+            <article class="card chart-card"><div class="card-title">Evolució setmanal</div><p class="muted">Comparativa amb setmana anterior</p><svg viewBox="0 0 320 130"><g stroke="#e5eaf2"><path d="M20 22H300M20 58H300M20 94H300"/></g><polyline points="20,92 65,74 110,92 155,76 200,96 245,54 300,42" fill="none" stroke="#0054A6" stroke-width="4" stroke-linecap="round"/></svg></article>
+            <article class="card risk-card"><div class="card-title">Predicció pròxima setmana</div><p class="muted">IA operacional</p><div class="semi"><strong>RISC ALT</strong></div><button class="btn soft">Veure predicció</button></article>
+            <article class="card device-card"><div class="card-title">Dispositius previstos</div><p class="muted">Proper cap de setmana</p><div class="row"><span>Divendres nit</span><b>12 efectius</b></div><div class="row"><span>Dissabte nit</span><b>14 efectius</b></div><div class="row"><span>Diumenge nit</span><b>8 efectius</b></div></article>
+          </section>
+
+          <section class="double-grid">
+            <article class="card list-card"><div class="card-title">Top zones</div><div class="rank"><p><b>1</b>Zona Oci Nocturn<span class="up">+25%</span></p><p><b>2</b>Zona Centre<span class="up">+12%</span></p><p><b>3</b>Zona Sud<span class="up">+18%</span></p></div></article>
+            <article class="card list-card"><div class="card-title">Tipus més comuns</div><div class="rank"><p><b>◎</b>Incivisme<span>156</span></p><p><b>◌</b>Assistencials<span>97</span></p><p><b>🚓</b>Trànsit<span>58</span></p></div></article>
+          </section>
+        </div>
+
+        <aside class="right-stack">
+          <article class="card ai-card"><div class="card-title">Resumen IA setmanal</div><p class="muted">Anàlisi automàtica de novetats</p><div class="ai-list"><div><i data-lucide="trending-up"></i><p><b>Augment d’incivisme zona oci</b><span>+22% respecte setmana anterior.</span></p></div><div><i data-lucide="clock-3"></i><p><b>Increment assistencials tarda</b><span>Especialment zona centre i sud.</span></p></div><div><i data-lucide="alert-triangle"></i><p><b>Habitatge recurrent detectat</b><span>Reiteració de serveis en ubicació concreta.</span></p></div><div><i data-lucide="shield-check"></i><p><b>Recomanació IA</b><span>Presència preventiva a centre, sud i oci.</span></p></div></div></article>
+          <article class="card upload-card"><div class="card-title">Pujar informe policial</div><p class="muted">PDF/TXT · lectura local demo</p><input id="file" type="file" accept=".pdf,.txt"><button class="btn primary full">Analitzar</button></article>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav">
+    <a class="active"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a><a><i data-lucide="file-text"></i><span>Novetats</span></a><a><i data-lucide="map"></i><span>Mapa</span></a><a><i data-lucide="brain-circuit"></i><span>IA</span></a><a><i data-lucide="trending-up"></i><span>Predicció</span></a>
+  </nav>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
