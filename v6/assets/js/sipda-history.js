@@ -64,26 +64,49 @@ function normalizeHistoryTime(item) {
   return String(item.time || "--:--").slice(0, 5);
 }
 
+function getDatasetSourceType(dataset) {
+  const raw = `${dataset?.source?.sourceType || ""} ${dataset?.source?.origin || ""} ${dataset?.source?.sourceLabel || ""}`.toLowerCase();
+  if (raw.includes("mossos") || raw.includes("usc") || raw.includes("pg-me") || raw.includes("pgme")) return "MOSSOS";
+  if (raw.includes("policia local") || raw.includes("guardia urbana") || raw.includes("pl")) return "PL";
+  return dataset?.source?.sourceType || "ALTRES";
+}
+
+function enrichSourceItem(item, dataset, datasetIndex, index) {
+  const sourceType = item.sourceType || getDatasetSourceType(dataset);
+  const sourceLabel = item.sourceLabel || dataset?.source?.sourceLabel || dataset?.source?.origin || "Origen no determinat";
+  return {
+    ...item,
+    id: `${item.id || "hist"}-${datasetIndex}-${index}`,
+    sourceType,
+    sourceLabel,
+    sourceBadge: item.sourceBadge || (sourceType === "PL" ? "PL" : sourceType === "MOSSOS" ? "ME" : "--"),
+    sourceDocument: dataset.source?.document,
+    sourceOrigin: dataset.source?.origin
+  };
+}
+
 function mergeSipdaHistory(history) {
   const datasets = history.map((entry) => entry.dataset).filter(Boolean);
   const hotspots = datasets.flatMap((dataset, datasetIndex) =>
-    (dataset.hotspots || []).map((item, index) => ({
-      ...item,
-      id: `${item.id || "hist"}-${datasetIndex}-${index}`,
-      sourceDocument: dataset.source?.document,
-      sourceOrigin: dataset.source?.origin
-    }))
+    (dataset.hotspots || []).map((item, index) => enrichSourceItem(item, dataset, datasetIndex, index))
   );
 
-  const timeline = datasets.flatMap((dataset) => dataset.timeline || [])
+  const timeline = datasets.flatMap((dataset, datasetIndex) =>
+    (dataset.timeline || []).map((item, index) => enrichSourceItem(item, dataset, datasetIndex, index))
+  )
     .sort((a, b) => normalizeHistoryTime(a).localeCompare(normalizeHistoryTime(b)))
-    .slice(-28);
+    .slice(-40);
 
   const high = countHighRisk(hotspots);
   const medium = countMediumRisk(hotspots);
   const totalServices = datasets.reduce((sum, dataset) => sum + (Number(dataset.summary?.totalServices) || 0), 0);
   const origins = [...new Set(datasets.map((dataset) => dataset.source?.origin).filter(Boolean))];
   const docs = datasets.map((dataset) => dataset.source?.document).filter(Boolean);
+  const sourceStats = hotspots.reduce((acc, item) => {
+    const key = item.sourceType || "ALTRES";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
   const topZones = [...hotspots]
     .sort((a, b) => (b.intensity || 0) - (a.intensity || 0))
     .slice(0, 5)
@@ -101,15 +124,17 @@ function mergeSipdaHistory(history) {
       importedAt: new Date().toISOString(),
       historicMode: true,
       documents: docs,
+      sourceStats,
       privacy: "Històric local del navegador. No puja cap PDF a servidor."
     },
+    sourceStats,
     summary: {
       totalServices,
       relevantServices: high,
       riskLevel,
       mainPattern: `Lectura acumulada de ${datasets.length} informes amb pressió principal a ${topZones}.`,
-      executiveRead: `SIPDA ha consolidat ${datasets.length} informes amb ${totalServices} serveis totals. Hi ha ${high} serveis d'alt risc i ${medium} de risc mitjà. Zones prioritàries: ${topZones}.`,
-      recommendation: `Treballar el patrullatge i la previsió sobre les zones repetides del mapa de calor: ${topZones}. Revisar franges de tarda-nit i cap de setmana.`
+      executiveRead: `SIPDA ha consolidat ${datasets.length} informes amb ${totalServices} serveis totals. PL: ${sourceStats.PL || 0} punts · ME: ${sourceStats.MOSSOS || 0} punts. Hi ha ${high} serveis d'alt risc i ${medium} de risc mitjà. Zones prioritàries: ${topZones}.`,
+      recommendation: `Treballar el patrullatge i la previsió sobre les zones repetides del mapa de calor: ${topZones}. Revisar franges de tarda-nit i cap de setmana. Separar lectura PL i ME per assignació operativa.`
     },
     kpis: mergeKpis(datasets),
     hotspots,
