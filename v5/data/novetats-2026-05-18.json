@@ -4,7 +4,8 @@
     "dateRange": "2026-05-18/2026-05-19",
     "origin": "Policia Local",
     "privacy": "Datos personales anonimizados para vista de inteligencia",
-    "geocoding": "Direcciones reales extraídas de Via 1 y Lloc detall del parte. Los domicilios o hechos sensibles se geocodifican a nivel calle/zona en la vista pública."
+    "municipalityScope": "Castell d'Aro · Platja d'Aro · S'Agaró",
+    "geocoding": "Direcciones reales extraídas de Via 1 y Lloc detall del parte. Todas las direcciones quedan restringidas al término municipal de Castell d'Aro, Platja d'Aro y S'Agaró. Los domicilios o hechos sensibles se geocodifican a nivel calle/zona en la vista pública."
   },
   "summary": {
     "totalServices": 39,
@@ -36,7 +37,7 @@
       "zone": "Escola Els Estanys",
       "sourceAddress": "C JOSEP MARIA VILA 10",
       "displayAddress": "C. Josep Maria Vila 10 · Escola Els Estanys",
-      "geocodeAddress": "Carrer Josep Maria Vila 10, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Carrer Josep Maria Vila 10, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "exacta_publica",
       "summary": "Búsqueda de menor escapado del centro; posteriormente localizado con familia.",
       "privacyLevel": "ANONIMIZADO"
@@ -53,7 +54,7 @@
       "zone": "Av. Onze de Setembre",
       "sourceAddress": "AV ONZE DE SETEMBRE 21",
       "displayAddress": "Av. Onze de Setembre 21",
-      "geocodeAddress": "Avinguda Onze de Setembre 21, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Avinguda Onze de Setembre 21, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "exacta_via_publica",
       "summary": "Intervención por pelea, identificación de implicados, señalamiento vigente y arma eléctrica intervenida.",
       "privacyLevel": "ANONIMIZADO"
@@ -70,7 +71,7 @@
       "zone": "Lefties / zona comercial",
       "sourceAddress": "AV S'AGARÓ 90",
       "displayAddress": "Av. S'Agaró 90 · Lefties",
-      "geocodeAddress": "Avinguda S'Agaró 90, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Avinguda S'Agaró 90, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "exacta_comercial",
       "summary": "Sustracción de monedero en comercio con posible disponibilidad de imágenes.",
       "privacyLevel": "ANONIMIZADO"
@@ -87,7 +88,7 @@
       "zone": "Av. de la Platja",
       "sourceAddress": "AV DE LA PLATJA 272",
       "displayAddress": "Av. de la Platja 272",
-      "geocodeAddress": "Avinguda de la Platja 272, Castell d'Aro, Girona, Spain",
+      "geocodeAddress": "Avinguda de la Platja 272, Castell d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "exacta_via_publica",
       "summary": "Aviso de inundación en establecimiento y gestión con Aqualia.",
       "privacyLevel": "AGREGADO"
@@ -104,7 +105,7 @@
       "zone": "Av. Platja d'Aro / C. S'Agaró",
       "sourceAddress": "AV PLATJA D'ARO / C AGARÓ",
       "displayAddress": "Av. Platja d'Aro con C. S'Agaró",
-      "geocodeAddress": "Avinguda Platja d'Aro con Carrer S'Agaró, S'Agaró, Girona, Spain",
+      "geocodeAddress": "Avinguda Platja d'Aro amb Carrer S'Agaró, S'Agaró, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "interseccion",
       "summary": "Corte de vía por inundación en el eje Av. Platja d'Aro.",
       "privacyLevel": "AGREGADO"
@@ -121,7 +122,7 @@
       "zone": "C. Ripollès / C. Gironès",
       "sourceAddress": "C RIPOLLÈS / C GIRONÈS",
       "displayAddress": "C. Ripollès con C. Gironès",
-      "geocodeAddress": "Carrer Ripollès con Carrer Gironès, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Carrer Ripollès amb Carrer Gironès, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "interseccion",
       "summary": "Corte para impedir acceso a zona afectada por inundación.",
       "privacyLevel": "AGREGADO"
@@ -138,7 +139,7 @@
       "zone": "C. Gavines / Av. Platja d'Aro",
       "sourceAddress": "C GAVINES / AV PLATJA D'ARO",
       "displayAddress": "C. Gavines con Av. Platja d'Aro",
-      "geocodeAddress": "Carrer Gavines con Avinguda Platja d'Aro, S'Agaró, Girona, Spain",
+      "geocodeAddress": "Carrer Gavines amb Avinguda Platja d'Aro, S'Agaró, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "interseccion",
       "summary": "Nuevo corte de vía por afectación meteorológica.",
       "privacyLevel": "AGREGADO"
@@ -155,7 +156,7 @@
       "zone": "Rotonda de l'Ànec",
       "sourceAddress": "ROTONDA DE L'ÀNEC",
       "displayAddress": "Rotonda de l'Ànec",
-      "geocodeAddress": "Rotonda de l'Ànec, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Rotonda de l'Ànec, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "punto_operativo",
       "summary": "Gestión con brigada para apertura de embornales.",
       "privacyLevel": "AGREGADO"
@@ -172,7 +173,7 @@
       "zone": "C. Can Semí",
       "sourceAddress": "C CAN SEMÍ",
       "displayAddress": "C. Can Semí · zona mirador",
-      "geocodeAddress": "Carrer Can Semí, Castell d'Aro, Girona, Spain",
+      "geocodeAddress": "Carrer Can Semí, Castell d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "calle",
       "summary": "Caída de fanal y afectación de acera por temporal; gestión con alumbrado.",
       "privacyLevel": "AGREGADO"
@@ -189,7 +190,7 @@
       "zone": "Av. Cavall Bernat",
       "sourceAddress": "AV CAVALL BERNAT 146",
       "displayAddress": "Av. Cavall Bernat 146",
-      "geocodeAddress": "Avinguda Cavall Bernat 146, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Avinguda Cavall Bernat 146, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "exacta_via_publica",
       "summary": "Aviso por presencia habitual de jabalíes en finca de trabajo; derivación a agentes rurales.",
       "privacyLevel": "ANONIMIZADO"
@@ -206,7 +207,7 @@
       "zone": "C. Llémana",
       "sourceAddress": "C LLÉMANA 17",
       "displayAddress": "C. Llémana · ubicación protegida",
-      "geocodeAddress": "Carrer Llémana, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Carrer Llémana, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "calle_sin_portal_privacidad",
       "summary": "Vehículo dificultando salida de gual; activación y anulación posterior de grúa, denuncia al vehículo.",
       "privacyLevel": "ANONIMIZADO"
@@ -223,7 +224,7 @@
       "zone": "Cr. Vella Santa Cristina",
       "sourceAddress": "CR VELLA SANTA CRISTINA",
       "displayAddress": "Cr. Vella Santa Cristina · zona Grues Felip",
-      "geocodeAddress": "Carretera Vella de Santa Cristina, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Carretera Vella de Santa Cristina, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "calle",
       "summary": "Árbol atravesando la vía, activación de Bomberos y reapertura posterior.",
       "privacyLevel": "AGREGADO"
@@ -240,7 +241,7 @@
       "zone": "Urbanització La Gavina",
       "sourceAddress": "UR LA GAVINA",
       "displayAddress": "Urbanització La Gavina",
-      "geocodeAddress": "Urbanització La Gavina, S'Agaró, Girona, Spain",
+      "geocodeAddress": "Urbanització La Gavina, S'Agaró, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "zona",
       "summary": "Aviso de vigilante por persona generando inseguridad; marcha en dirección Platja d'Aro.",
       "privacyLevel": "ANONIMIZADO"
@@ -257,7 +258,7 @@
       "zone": "C. Corrons",
       "sourceAddress": "C CORRONS 25",
       "displayAddress": "C. Corrons · ubicación protegida",
-      "geocodeAddress": "Carrer Corrons, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Carrer Corrons, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "calle_sin_portal_privacidad",
       "summary": "Daños en acceso a domicilio tras intento de robo; se programa seguimiento preventivo nocturno.",
       "privacyLevel": "ANONIMIZADO"
@@ -274,7 +275,7 @@
       "zone": "Rotonda acceso Politur",
       "sourceAddress": "AV POLITUR 1",
       "displayAddress": "Av. Politur 1 · Rotonda acceso Politur",
-      "geocodeAddress": "Avinguda Politur 1, Platja d'Aro, Girona, Spain",
+      "geocodeAddress": "Avinguda Politur 1, Platja d'Aro, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "exacta_via_publica",
       "summary": "Control de seguridad ciudadana con resultado de una denuncia por ITV.",
       "privacyLevel": "ANONIMIZADO"
@@ -291,7 +292,7 @@
       "zone": "Sector 1 / Platja d'Aro",
       "sourceAddress": "ZO PLATJA D'ARO",
       "displayAddress": "Sector 1 · Platja d'Aro",
-      "geocodeAddress": "Platja d'Aro centre, Girona, Spain",
+      "geocodeAddress": "Platja d'Aro centre, Castell d'Aro Platja d'Aro i S'Agaró, Baix Empordà, Girona, Catalunya, Spain",
       "geocodePrecision": "sector",
       "summary": "Vigilancia preventiva nocturna por robos con violencia e intimidación.",
       "privacyLevel": "AGREGADO"
