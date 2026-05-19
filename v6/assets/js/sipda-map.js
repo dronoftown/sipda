@@ -16,11 +16,26 @@ function showMapTokenNotice(message) {
   if (span) span.textContent = message;
 }
 
+function getMapSourceType(properties) {
+  const raw = `${properties?.sourceType || ""} ${properties?.sourceOrigin || ""} ${properties?.sourceLabel || ""}`.toLowerCase();
+  if (raw.includes("mossos") || raw.includes("usc") || raw.includes("pg-me") || raw.includes("pgme")) return "MOSSOS";
+  if (raw.includes("policia local") || raw === "pl" || raw.includes(" pl ")) return "PL";
+  return properties?.sourceType || "ALTRES";
+}
+
+function sourcePrefix(properties) {
+  const type = getMapSourceType(properties);
+  if (type === "PL") return "PL";
+  if (type === "MOSSOS") return "ME";
+  return "--";
+}
+
 function buildPopupHTML(properties) {
   const riskLabel = { high: "Alt", medium: "Mitjà", low: "Baix" }[properties.risk] || "Info";
+  const source = sourcePrefix(properties);
   return `
     <div class="sipda-popup">
-      <strong>${properties.title || properties.zone || "Zona operativa"}</strong>
+      <strong>${source} · ${properties.title || properties.zone || "Zona operativa"}</strong>
       <span>${properties.displayAddress || properties.zone || "Zona"} · Risc ${riskLabel}</span>
       <em>${properties.summary || "Servei agregat SIPDA"}</em>
     </div>
@@ -66,7 +81,7 @@ function setLayerVisibility(map, mode) {
   const heatVisibility = mode === "points" ? "none" : "visible";
   const pointVisibility = mode === "heat" ? "none" : "visible";
   if (map.getLayer("sipda-heatmap")) map.setLayoutProperty("sipda-heatmap", "visibility", heatVisibility);
-  ["sipda-risk-points", "sipda-risk-labels"].forEach((id) => {
+  ["sipda-risk-points", "sipda-risk-labels", "sipda-source-labels"].forEach((id) => {
     if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", pointVisibility);
   });
 }
@@ -130,6 +145,7 @@ async function loadOperationalGeoJSON(token, sourceData) {
     const geocoded = await geocodeAddress(item.geocodeAddress, token);
     const coordinates = isInsideMunicipalBbox(geocoded) ? geocoded : isInsideMunicipalBbox(item.coordinates) ? item.coordinates : null;
     if (!coordinates) continue;
+    const sourceType = item.sourceType || (item.sourceOrigin && /mossos|usc/i.test(item.sourceOrigin) ? "MOSSOS" : "PL");
     features.push({
       type: "Feature",
       properties: {
@@ -142,7 +158,11 @@ async function loadOperationalGeoJSON(token, sourceData) {
         levelLabel: item.levelLabel,
         intensity: item.intensity,
         category: item.category,
-        summary: item.summary
+        summary: item.summary,
+        sourceType,
+        sourceLabel: item.sourceLabel,
+        sourceOrigin: item.sourceOrigin,
+        sourceBadge: sourceType === "MOSSOS" ? "ME" : "PL"
       },
       geometry: { type: "Point", coordinates }
     });
@@ -214,11 +234,11 @@ function initSipdaMap() {
       type: "circle",
       source: "sipda-incidents",
       paint: {
-        "circle-radius": ["interpolate", ["linear"], ["get", "intensity"], 1, 6, 10, 12],
-        "circle-color": ["match", ["get", "risk"], "high", "#ef4444", "medium", "#f59e0b", "low", "#16a34a", "#111111"],
-        "circle-stroke-color": "rgba(255,255,255,0.94)",
-        "circle-stroke-width": 2,
-        "circle-opacity": 0.94
+        "circle-radius": ["interpolate", ["linear"], ["get", "intensity"], 1, 7, 10, 13],
+        "circle-color": ["match", ["get", "sourceType"], "PL", "#154c7c", "MOSSOS", "#e30613", "#111111"],
+        "circle-stroke-color": ["match", ["get", "risk"], "high", "#ef4444", "medium", "#f59e0b", "low", "#16a34a", "rgba(255,255,255,0.94)"],
+        "circle-stroke-width": 3,
+        "circle-opacity": 0.95
       }
     });
 
@@ -226,8 +246,16 @@ function initSipdaMap() {
       id: "sipda-risk-labels",
       type: "symbol",
       source: "sipda-incidents",
-      layout: { "text-field": ["get", "levelLabel"], "text-size": 11, "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"], "text-offset": [0, 1.45], "text-anchor": "top", "text-allow-overlap": true, "text-ignore-placement": true },
+      layout: { "text-field": ["get", "levelLabel"], "text-size": 10, "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"], "text-offset": [0, 1.55], "text-anchor": "top", "text-allow-overlap": true, "text-ignore-placement": true },
       paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.95)", "text-halo-width": 1.6 }
+    });
+
+    map.addLayer({
+      id: "sipda-source-labels",
+      type: "symbol",
+      source: "sipda-incidents",
+      layout: { "text-field": ["get", "sourceBadge"], "text-size": 10, "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"], "text-offset": [0, -0.05], "text-anchor": "center", "text-allow-overlap": true, "text-ignore-placement": true },
+      paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.72)", "text-halo-width": 1.2 }
     });
 
     map.on("click", "sipda-risk-points", (event) => {
