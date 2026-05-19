@@ -36,7 +36,6 @@
         <a class="active" href="#top">Situació</a>
         <a href="#mapa">Mapa</a>
         <a href="#ia">IA</a>
-        <a href="#xat">Xat SIPDA</a>
         <a href="#prediccio">Predicció 48 h</a>
         <a href="#risc">Risc</a>
         <a href="#docs">Informes</a>
@@ -89,23 +88,6 @@
             <div class="ai-feed"><div class="feed-item"><i class="marker neutral"></i><div><strong>Carregant</strong><span>Esperant dades operatives.</span></div></div></div>
           </article>
 
-          <article id="xat" class="panel chat-panel">
-            <div class="panel-head compact"><div><h2>Xat SIPDA</h2><p>Assistent local basat només en les dades de la web.</p></div><span class="state-pill">Local</span></div>
-            <div class="chat-prompts">
-              <button type="button" data-chat-prompt="Fes-me un briefing del servei">Briefing</button>
-              <button type="button" data-chat-prompt="Quines són les zones calentes?">Zones</button>
-              <button type="button" data-chat-prompt="Quina previsió tenim a 48 hores?">48 h</button>
-              <button type="button" data-chat-prompt="Genera un informe executiu">Informe</button>
-            </div>
-            <div id="sipdaChatLog" class="chat-log" aria-live="polite">
-              <div class="chat-message assistant"><strong>Xat SIPDA actiu</strong><p>Pregunta’m pel briefing, zones calentes, previsió 48 h, serveis rellevants o informe executiu.</p></div>
-            </div>
-            <form id="sipdaChatForm" class="chat-form">
-              <input id="sipdaChatInput" placeholder="Pregunta a SIPDA..." autocomplete="off">
-              <button class="btn primary" type="submit">Enviar</button>
-            </form>
-          </article>
-
           <article id="prediccio" class="panel prediction-card">
             <div class="panel-head compact"><div><h2>Predicció 48 h</h2><p>Estimació operativa de risc.</p></div></div>
             <div id="predictionGrid" class="prediction-grid"><div class="prediction-row"><span>--</span><strong>Sense dades</strong><em>pendent</em></div></div>
@@ -125,7 +107,27 @@
     </main>
   </div>
 
-  <nav class="mobile-nav" aria-label="Navegació mòbil"><a class="active" href="#top"><i data-lucide="scan-line"></i><span>Inici</span></a><a href="#mapa"><i data-lucide="map"></i><span>Mapa</span></a><a href="#xat"><i data-lucide="message-square"></i><span>Xat</span></a><a href="#prediccio"><i data-lucide="radar"></i><span>48 h</span></a><a href="#docs"><i data-lucide="file-text"></i><span>Docs</span></a></nav>
+  <div class="floating-chat" id="sipdaFloatingChat" aria-live="polite">
+    <button id="chatToggle" class="chat-launcher" type="button" aria-label="Obrir Xat SIPDA"><i data-lucide="message-square"></i><span>Xat SIPDA</span></button>
+    <section id="chatDrawer" class="chat-drawer" aria-label="Xat SIPDA" hidden>
+      <div class="chat-drawer-head"><div><strong>Xat SIPDA</strong><span>Assistent local · dades de la web</span></div><button id="chatClose" type="button" aria-label="Tancar xat"><i data-lucide="x"></i></button></div>
+      <div class="chat-prompts">
+        <button type="button" data-chat-prompt="Fes-me un briefing del servei">Briefing</button>
+        <button type="button" data-chat-prompt="Quines són les zones calentes?">Zones</button>
+        <button type="button" data-chat-prompt="Quina previsió tenim a 48 hores?">48 h</button>
+        <button type="button" data-chat-prompt="Genera un informe executiu">Informe</button>
+      </div>
+      <div id="sipdaChatLog" class="chat-log" aria-live="polite">
+        <div class="chat-message assistant"><strong>Xat SIPDA actiu</strong><p>Pregunta’m pel briefing, zones calentes, previsió 48 h, serveis rellevants o informe executiu.</p></div>
+      </div>
+      <form id="sipdaChatForm" class="chat-form">
+        <input id="sipdaChatInput" placeholder="Pregunta a SIPDA..." autocomplete="off">
+        <button class="btn primary" type="submit">Enviar</button>
+      </form>
+    </section>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Navegació mòbil"><a class="active" href="#top"><i data-lucide="scan-line"></i><span>Inici</span></a><a href="#mapa"><i data-lucide="map"></i><span>Mapa</span></a><a href="#ia"><i data-lucide="brain-circuit"></i><span>IA</span></a><a href="#prediccio"><i data-lucide="radar"></i><span>48 h</span></a><a href="#docs"><i data-lucide="file-text"></i><span>Docs</span></a></nav>
 
   <script src="../v4/assets/js/env.js"></script>
   <script src="../v5/assets/js/sipda-auth.js"></script>
