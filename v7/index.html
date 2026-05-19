@@ -53,13 +53,13 @@
       <header class="topbar">
         <div><p>SIPDA / v7 / Command center municipal</p><h1>Centre d'intel·ligència operativa</h1></div>
         <div class="top-actions">
-          <div class="quick-tools" aria-label="Cerca i filtre">
-            <label class="command-search" for="commandSearch">
+          <div class="sipda-command-tools" aria-label="Cerca i filtre">
+            <button id="commandSearch" class="sipda-command-search" type="button" aria-label="Cercar novetat, zona o informe">
               <i data-lucide="search"></i>
-              <input id="commandSearch" type="search" placeholder="Cercar novetat, zona o informe">
+              <span>Cercar novetat, zona o informe</span>
               <kbd>⌘K</kbd>
-            </label>
-            <button id="periodFilter" class="period-filter" type="button"><i data-lucide="calendar-days"></i><span>Període</span></button>
+            </button>
+            <button id="periodFilter" class="sipda-period-pill" type="button"><i data-lucide="calendar-days"></i><span>Període</span></button>
           </div>
           <button id="openImport" class="btn black" type="button"><i data-lucide="upload-cloud"></i>Pujar informe</button>
           <button id="clearHistory" class="btn white" type="button"><i data-lucide="trash-2"></i>Buidar històric</button>
