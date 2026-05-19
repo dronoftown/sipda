@@ -5,6 +5,8 @@ const SIPDA_MAP_CONFIG = {
   bearing: -16
 };
 
+const geocodeCache = new Map();
+
 function showMapTokenNotice(message) {
   const notice = document.getElementById("mapTokenNotice");
   if (!notice) return;
@@ -25,7 +27,7 @@ function buildPopupHTML(properties) {
   return `
     <div class="sipda-popup">
       <strong>${properties.title || properties.zone || "Zona operativa"}</strong>
-      <span>${properties.zone || "Zona"} · Riesgo ${riskLabel}</span>
+      <span>${properties.displayAddress || properties.zone || "Zona"} · Riesgo ${riskLabel}</span>
       <em>${properties.summary || "Servicio agregado SIPDA"}</em>
     </div>
   `;
@@ -92,19 +94,49 @@ function bindLayerControls(map) {
   });
 }
 
-async function loadOperationalGeoJSON() {
-  const response = await fetch("./data/novetats-2026-05-18.json", { cache: "no-store" });
-  const data = await response.json();
+async function geocodeAddress(address, token) {
+  if (!address || !token) return null;
+  if (geocodeCache.has(address)) return geocodeCache.get(address);
 
-  return {
-    type: "FeatureCollection",
-    features: data.hotspots.map((item) => ({
+  const url =
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json` +
+    `?access_token=${encodeURIComponent(token)}` +
+    `&limit=1&language=ca,es&country=es&proximity=3.0608,41.8162`;
+
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    const data = await response.json();
+    const center = data && data.features && data.features[0] ? data.features[0].center : null;
+    geocodeCache.set(address, center);
+    return center;
+  } catch (error) {
+    console.warn("SIPDA geocoding error", address, error);
+    geocodeCache.set(address, null);
+    return null;
+  }
+}
+
+async function loadOperationalGeoJSON(token) {
+  const response = await fetch(`./data/novetats-2026-05-18.json?v=${Date.now()}`, { cache: "no-store" });
+  const data = await response.json();
+  const features = [];
+
+  for (const item of data.hotspots) {
+    const geocoded = await geocodeAddress(item.geocodeAddress, token);
+    const coordinates = geocoded || item.coordinates;
+    if (!coordinates) continue;
+
+    features.push({
       type: "Feature",
       properties: {
         id: item.id,
         serviceId: item.serviceId,
         title: item.title,
         zone: item.zone,
+        sourceAddress: item.sourceAddress || "",
+        displayAddress: item.displayAddress || item.zone,
+        geocodeAddress: item.geocodeAddress || "",
+        geocodePrecision: item.geocodePrecision || "",
         risk: item.risk,
         levelLabel: item.levelLabel,
         intensity: item.intensity,
@@ -113,10 +145,19 @@ async function loadOperationalGeoJSON() {
       },
       geometry: {
         type: "Point",
-        coordinates: item.coordinates
+        coordinates
       }
-    }))
-  };
+    });
+  }
+
+  return { type: "FeatureCollection", features };
+}
+
+function fitMapToFeatures(map, geojson) {
+  if (!geojson.features.length) return;
+  const bounds = new mapboxgl.LngLatBounds();
+  geojson.features.forEach((feature) => bounds.extend(feature.geometry.coordinates));
+  map.fitBounds(bounds, { padding: 70, maxZoom: 15.4, duration: 1200 });
 }
 
 function initSipdaMap() {
@@ -147,12 +188,9 @@ function initSipdaMap() {
 
   map.on("load", async () => {
     addTerrain3D(map);
-    const operationalData = await loadOperationalGeoJSON();
+    const operationalData = await loadOperationalGeoJSON(token);
 
-    map.addSource("sipda-incidents", {
-      type: "geojson",
-      data: operationalData
-    });
+    map.addSource("sipda-incidents", { type: "geojson", data: operationalData });
 
     map.addLayer({
       id: "sipda-heatmap",
@@ -165,9 +203,7 @@ function initSipdaMap() {
         "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 10, 34, 14, 68, 16, 96],
         "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.62, 14, 0.78, 16, 0.68],
         "heatmap-color": [
-          "interpolate",
-          ["linear"],
-          ["heatmap-density"],
+          "interpolate", ["linear"], ["heatmap-density"],
           0, "rgba(0,0,0,0)",
           0.12, "rgba(37,99,235,0.20)",
           0.32, "rgba(22,163,74,0.32)",
@@ -214,7 +250,6 @@ function initSipdaMap() {
     map.on("click", "sipda-risk-points", (event) => {
       const feature = event.features && event.features[0];
       if (!feature) return;
-
       new mapboxgl.Popup({ closeButton: true, closeOnClick: true, offset: 16 })
         .setLngLat(feature.geometry.coordinates)
         .setHTML(buildPopupHTML(feature.properties || {}))
@@ -224,6 +259,7 @@ function initSipdaMap() {
     map.on("mouseenter", "sipda-risk-points", () => { map.getCanvas().style.cursor = "pointer"; });
     map.on("mouseleave", "sipda-risk-points", () => { map.getCanvas().style.cursor = ""; });
 
+    fitMapToFeatures(map, operationalData);
     bindLayerControls(map);
   });
 
