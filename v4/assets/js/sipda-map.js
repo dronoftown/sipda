@@ -1,8 +1,8 @@
 const SIPDA_MAP_CONFIG = {
-  center: [3.0674, 41.8171],
-  zoom: 13.45,
-  pitch: 64,
-  bearing: -18
+  center: [3.0636, 41.8170],
+  zoom: 13.75,
+  pitch: 62,
+  bearing: -16
 };
 
 function showMapTokenNotice(message) {
@@ -47,7 +47,7 @@ function addTerrain3D(map) {
     });
   }
 
-  map.setTerrain({ source: "mapbox-dem", exaggeration: 1.35 });
+  map.setTerrain({ source: "mapbox-dem", exaggeration: 1.25 });
 
   if (!map.getLayer("sipda-3d-buildings")) {
     map.addLayer(
@@ -59,10 +59,10 @@ function addTerrain3D(map) {
         type: "fill-extrusion",
         minzoom: 14,
         paint: {
-          "fill-extrusion-color": "rgba(255,255,255,0.72)",
+          "fill-extrusion-color": "rgba(255,255,255,0.70)",
           "fill-extrusion-height": ["get", "height"],
           "fill-extrusion-base": ["get", "min_height"],
-          "fill-extrusion-opacity": 0.62
+          "fill-extrusion-opacity": 0.52
         }
       },
       getFirstSymbolLayerId(map)
@@ -112,46 +112,49 @@ function initSipdaMap() {
       id: "sipda-heatmap",
       type: "heatmap",
       source: "sipda-incidents",
-      maxzoom: 16,
+      maxzoom: 17,
       paint: {
         "heatmap-weight": [
           "interpolate",
           ["linear"],
           ["get", "intensity"],
           0, 0,
-          10, 1
+          10, 1.35
         ],
         "heatmap-intensity": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 0.55,
-          15, 1.75
+          10, 1.15,
+          14, 2.35,
+          16, 3.1
         ],
         "heatmap-radius": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 22,
-          15, 52
+          10, 38,
+          14, 74,
+          16, 96
         ],
         "heatmap-opacity": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 0.46,
-          15, 0.68
+          10, 0.72,
+          14, 0.82,
+          16, 0.66
         ],
         "heatmap-color": [
           "interpolate",
           ["linear"],
           ["heatmap-density"],
           0, "rgba(0,84,166,0)",
-          0.2, "rgba(0,84,166,0.12)",
-          0.4, "rgba(22,163,74,0.18)",
-          0.6, "rgba(245,158,11,0.25)",
-          0.8, "rgba(239,68,68,0.32)",
-          1, "rgba(239,68,68,0.42)"
+          0.12, "rgba(0,84,166,0.20)",
+          0.32, "rgba(22,163,74,0.32)",
+          0.55, "rgba(245,158,11,0.45)",
+          0.78, "rgba(239,68,68,0.58)",
+          1, "rgba(239,68,68,0.72)"
         ]
       }
     });
@@ -160,14 +163,14 @@ function initSipdaMap() {
       id: "sipda-points",
       type: "circle",
       source: "sipda-incidents",
-      minzoom: 14.2,
+      minzoom: 12.6,
       paint: {
         "circle-radius": [
           "interpolate",
           ["linear"],
           ["get", "intensity"],
-          1, 3,
-          10, 8
+          1, 5,
+          10, 13
         ],
         "circle-color": [
           "match",
@@ -177,10 +180,10 @@ function initSipdaMap() {
           "low", "#16a34a",
           "#0054A6"
         ],
-        "circle-stroke-color": "rgba(255,255,255,0.38)",
+        "circle-stroke-color": "rgba(255,255,255,0.42)",
         "circle-stroke-width": 1,
-        "circle-opacity": 0.24,
-        "circle-blur": 0.45
+        "circle-opacity": 0.18,
+        "circle-blur": 0.6
       }
     });
 
