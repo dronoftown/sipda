@@ -1,7 +1,8 @@
 let pendingSipdaDataset = null;
 let pendingSipdaFileName = "";
 
-const SIPDA_PDF_WORKER_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+const SIPDA_PDF_JS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+const SIPDA_PDF_WORKER_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 function setImportStatus(message, type = "info") {
   const status = document.getElementById("importStatus");
@@ -57,16 +58,45 @@ function closeImportModal() {
 }
 
 function configurePdfWorker(pdfjs) {
-  if (!pdfjs || !pdfjs.GlobalWorkerOptions) return pdfjs;
-  pdfjs.GlobalWorkerOptions.workerSrc = SIPDA_PDF_WORKER_SRC;
+  if (!pdfjs) return null;
+  if (pdfjs.GlobalWorkerOptions) {
+    pdfjs.GlobalWorkerOptions.workerSrc = SIPDA_PDF_WORKER_SRC;
+  }
   return pdfjs;
 }
 
+function loadScriptOnce(src, id) {
+  return new Promise((resolve, reject) => {
+    const existing = document.getElementById(id);
+    if (existing) {
+      existing.addEventListener("load", resolve, { once: true });
+      existing.addEventListener("error", reject, { once: true });
+      if (window.pdfjsLib) resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = id;
+    script.src = src;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("No s'ha pogut carregar PDF.js"));
+    document.head.appendChild(script);
+  });
+}
+
 async function getPdfJs() {
-  if (window.pdfjsLib) return configurePdfWorker(window.pdfjsLib);
-  const module = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
-  window.pdfjsLib = configurePdfWorker(module);
-  return window.pdfjsLib;
+  if (window.pdfjsLib && window.pdfjsLib.getDocument) {
+    return configurePdfWorker(window.pdfjsLib);
+  }
+
+  await loadScriptOnce(SIPDA_PDF_JS_URL, "sipda-pdfjs-legacy");
+
+  if (!window.pdfjsLib || !window.pdfjsLib.getDocument) {
+    throw new Error("PDF.js no està disponible al navegador");
+  }
+
+  return configurePdfWorker(window.pdfjsLib);
 }
 
 function cleanText(value) {
@@ -339,6 +369,7 @@ function renderPendingSummary(dataset) {
 
 async function extractPdfText(file) {
   const pdfjs = await getPdfJs();
+  configurePdfWorker(pdfjs);
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
   let text = "";
