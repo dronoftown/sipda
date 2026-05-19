@@ -1,0 +1,122 @@
+/* SIPDA v6 · premium visual correction layer
+   Keeps the existing layout and logic, but restores the SaaS premium radius system. */
+:root{
+  --sipda-radius-xl:28px;
+  --sipda-radius-lg:22px;
+  --sipda-radius-md:16px;
+  --sipda-radius-sm:12px;
+  --sipda-blue-pl:#0054A6;
+  --sipda-red-me:#e30613;
+}
+
+.login-card,
+.topbar,
+.metric-card,
+.software-card,
+.unit-card,
+.command-search,
+.segmented-control,
+.map-toolbar,
+.map-legend,
+.map-notice,
+.upload-box,
+.import-dialog,
+.chat-drawer,
+.chat-launcher,
+.mapboxgl-popup-content{
+  border-radius:var(--sipda-radius-lg)!important;
+}
+
+.btn,
+.state-pill,
+.trend,
+.badge,
+.side-nav a,
+.mobile-nav a,
+.segmented-control button,
+.source-badge,
+.import-step,
+.import-status,
+.import-status-modal,
+.import-result-grid>div,
+.chat-prompts button,
+.chat-form input{
+  border-radius:999px!important;
+}
+
+.login-card input,
+.brand-icon,
+.agency-mark{
+  border-radius:var(--sipda-radius-md)!important;
+}
+
+.map-card,
+.map-stage,
+.map-canvas{
+  border-radius:var(--sipda-radius-xl)!important;
+}
+
+.map-stage{
+  overflow:hidden;
+}
+
+.source-prediction-panel{
+  margin:18px 0 4px!important;
+}
+
+.source-prediction-card{
+  border-radius:var(--sipda-radius-lg)!important;
+  overflow:hidden;
+}
+
+.source-prediction-card.pl{
+  border-top-color:var(--sipda-blue-pl)!important;
+}
+
+.source-prediction-card.me{
+  border-top-color:var(--sipda-red-me)!important;
+}
+
+.source-prediction-kpis span{
+  border-radius:var(--sipda-radius-md)!important;
+}
+
+.agency-mark.pl,
+.source-badge.pl:before{
+  background:var(--sipda-blue-pl)!important;
+}
+
+.source-badge.pl{
+  border-color:rgba(0,84,166,.24)!important;
+  background:rgba(0,84,166,.06)!important;
+  color:var(--sipda-blue-pl)!important;
+}
+
+.source-badge.me{
+  border-color:rgba(227,6,19,.24)!important;
+  background:rgba(227,6,19,.06)!important;
+  color:#b91c1c!important;
+}
+
+.zone-row .source-badge,
+.timeline-row .source-badge{
+  flex:0 0 auto;
+}
+
+@media(max-width:620px){
+  .topbar,
+  .software-card,
+  .metric-card{
+    border-radius:var(--sipda-radius-md)!important;
+  }
+
+  .map-card,
+  .map-stage,
+  .map-canvas{
+    border-radius:var(--sipda-radius-lg)!important;
+  }
+
+  .source-prediction-panel{
+    margin-top:12px!important;
+  }
+}
