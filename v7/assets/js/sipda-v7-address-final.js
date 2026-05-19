@@ -1,205 +1,55 @@
-/* SIPDA v7 · Address Final Guard
-   Blindaje final para que predicciones, zonas, timeline y mapa no hereden
-   "Adreça no detectada" cuando el PDF sí contiene Via 1 / Adreça / Loc / Zona.
-*/
+/* SIPDA v7 · address final compact guard */
 (function(){
-  const BUILD='address-final-guard-2026-05-20';
-  const STORAGE_KEY='sipda.v7.history.datasets';
-  const BAD=/adre[cç]a\s+no\s+detectada|ubicaci[oó]\s+no\s+detectada|no\s+determinat|sense\s+zona|zona\s+operativa$/i;
+  const BUILD='address-final-compact-2026-05-20';
+  const BAD=/adre[cç]a\s+no\s+detectada|ubicaci[oó]\s+pendent|no\s+determinat|sense\s+zona/i;
   const STREET=/^(Avinguda|Carrer|Plaça|Passeig|Carretera|Rambla|Passatge|Travessera|Camí|Urbanització)\b/i;
-  const ZONE=/(Platja d['’]Aro|Castell d['’]Aro|S['’]Agaró|S'Agaró|Centre|Mas Nou|Mas Semi|Politur|Fanals|Port d['’]Aro|Ridaura|Estanys|Costa Brava)/i;
-
-  function raw(v){return String(v||'').replace(/\r/g,' ').replace(/\n+/g,' ').replace(/[\t ]+/g,' ').trim();}
-  function safeLine(v){try{return typeof line==='function'?line(v):raw(v);}catch(e){return raw(v);}}
-  function escText(v){try{return typeof esc==='function'?esc(v):String(v||'');}catch(e){return String(v||'');}}
-  function clean(v){
-    return raw(v)
-      .replace(/^\s*(?:localitzaci[oó]|via\s*1|via|adre[cç]a|adreca|ubicaci[oó]|ubicacio|lloc|lloc\s+detall|zona|sector|loc)\s*:?\s*/i,'')
-      .replace(/\s+·\s+(?:ubicaci[oó]\s+protegida|n[uú]mero\s+no\s+detectat)\s*$/i,'')
-      .replace(/\s*,\s*/g,', ')
-      .replace(/\s+/g,' ')
-      .trim();
+  const ROAD=/^(AV|AV\.|AVDA|AVGDA|AVINGUDA|C|C\.|CL|CR|CARRER|PL|PÇA|PLAÇA|PG|PS|PASSEIG|CTRA|CARRETERA|RBLA|PTGE|TRAV|CAMI|CAMÍ|URB)$/i;
+  const LABEL=/^(via\s*1|adre[cç]a|adreca|ubicaci[oó]|ubicacio|lloc|lloc\s+detall|loc)$/i;
+  const STOP=/^(dia i hora|servei|incident|requeriment|nivell|prioritat|via\s*2|titular|responsable|inici|final|resultats|cronologia|not[ií]cia|noticia|descripci[oó]|descripcio|hora inici|unitat|estad[ií]stica|codi)$/i;
+  const NUM=/^(n[uú]m\.?\s*via|num\.?\s*via|n[uú]mero\s*via|numero\s*via|portal|n[uú]mero|numero)$/i;
+  const SKIP=/^(localitzaci[oó]|tipus\s+via|tipo\s+via|nom\s+via|nombre\s+via)$/i;
+  function raw(v){return String(v||'').replace(/\r/g,' ').replace(/\n+/g,' ').replace(/\s+/g,' ').trim();}
+  function clean(v){return raw(v).replace(/^\s*(?:via\s*1|via|adre[cç]a|adreca|ubicaci[oó]|ubicacio|lloc|lloc\s+detall|loc|zona|sector)\s*:?\s*/i,'').trim();}
+  function norm(v){return clean(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+  function street(v){
+    v=clean(v); if(!v)return '';
+    const rules=[[/^(AV|AV\.|AVDA|AVGDA|AVINGUDA)\s+/i,'Avinguda '],[/^(C|C\.|CL|CR|CARRER)\s+/i,'Carrer '],[/^(PL|PÇA|PLAÇA)\s+/i,'Plaça '],[/^(PG|PS|PASSEIG)\s+/i,'Passeig '],[/^(CTRA|CARRETERA)\s+/i,'Carretera '],[/^(RBLA|RAMBLA)\s+/i,'Rambla '],[/^(PTGE|PASSATGE)\s+/i,'Passatge '],[/^(TRAV|TRAVESSERA)\s+/i,'Travessera '],[/^(CAMI|CAMÍ)\s+/i,'Camí '],[/^(URB|URBANITZACIÓ|URBANITZACIO)\s+/i,'Urbanització ']];
+    rules.some(r=>{if(r[0].test(v)){v=v.replace(r[0],r[1]);return true;}return false;});
+    return v.replace(/\bS\s*['’]?\s*AGARO\b/gi,"S'Agaró").replace(/\bS\s*['’]?\s*AGARÓ\b/gi,"S'Agaró").replace(/\bPLATJA\s+D\s*['’]?\s*ARO\b/gi,"Platja d'Aro").replace(/\bCASTELL\s+D\s*['’]?\s*ARO\b/gi,"Castell d'Aro").replace(/\s+,\s*/g,', ').replace(/\s+/g,' ').trim();
   }
-  function normalizeStreet(value){
-    let v=clean(value);
-    if(!v)return '';
-    const rules=[
-      [/^(?:AV|AV\.|AVDA|AVDA\.|AVGDA|AVGDA\.|AVINGUDA)\s+/i,'Avinguda '],
-      [/^(?:CL|CL\.|C|C\.|CR|CR\.|CARRER)\s+/i,'Carrer '],
-      [/^(?:PL|PL\.|PÇA|PCA|PLAÇA|PLACA)\s+/i,'Plaça '],
-      [/^(?:PS|PS\.|PG|PG\.|PASSEIG)\s+/i,'Passeig '],
-      [/^(?:CTRA|CTRA\.|CARRETERA)\s+/i,'Carretera '],
-      [/^(?:RBLA|RBLA\.|RAMBLA)\s+/i,'Rambla '],
-      [/^(?:PTGE|PTGE\.|PASSATGE)\s+/i,'Passatge '],
-      [/^(?:TRAV|TRAV\.|TRAVESSERA)\s+/i,'Travessera '],
-      [/^(?:CAMI|CAMÍ|CAMI\.|CAMÍ\.)\s+/i,'Camí '],
-      [/^(?:URB|URB\.|URBANITZACIÓ|URBANITZACIO)\s+/i,'Urbanització ']
-    ];
-    rules.some(function(r){if(r[0].test(v)){v=v.replace(r[0],r[1]);return true;}return false;});
-    v=v
-      .replace(/\bAV\.?\b/gi,'Avinguda')
-      .replace(/\bAVDA\.?\b/gi,'Avinguda')
-      .replace(/\bAVGDA\.?\b/gi,'Avinguda')
-      .replace(/\bCL\.?\b/gi,'Carrer')
-      .replace(/\bCR\.?\b/gi,'Carrer')
-      .replace(/\bCTRA\.?\b/gi,'Carretera')
-      .replace(/\bPG\.?\b/gi,'Passeig')
-      .replace(/\bPS\.?\b/gi,'Passeig')
-      .replace(/\bPÇA\b/gi,'Plaça')
-      .replace(/\bPLACA\b/gi,'Plaça')
-      .replace(/\bS\s*['’]?\s*AGARO\b/gi,"S'Agaró")
-      .replace(/\bS\s*['’]?\s*AGARÓ\b/gi,"S'Agaró")
-      .replace(/\bPLATJA\s+D\s*['’]?\s*ARO\b/gi,"Platja d'Aro")
-      .replace(/\bCASTELL\s+D\s*['’]?\s*ARO\b/gi,"Castell d'Aro")
-      .replace(/\bCOSTA\s+BRAVA\b/gi,'Costa Brava')
-      .replace(/\bMAS\s+NOU\b/gi,'Mas Nou')
-      .replace(/\bMAS\s+SEMI\b/gi,'Mas Semi')
-      .replace(/\bPOLITUR\b/gi,'Politur')
-      .replace(/\s+/g,' ')
-      .replace(/\s+,/g,',')
-      .trim();
-    return v;
+  function isLabel(a,b){return LABEL.test(clean(a))||(norm(a)==='via'&&norm(b)==='1');}
+  function join(parts){
+    const p=parts.map(clean).filter(Boolean).filter(x=>!SKIP.test(norm(x))); const out=[];
+    for(let i=0;i<p.length;i++){if(NUM.test(norm(p[i]))){const n=p[i+1]||'';if(/^\d{1,4}[A-Za-zÀ-ÿ]?$/.test(n)){out.push(', '+n);i++;}continue;}out.push(p[i]);}
+    return street(out.join(' '));
   }
-  function valid(v){v=normalizeStreet(v);return !!v&&!BAD.test(v);}
-  function exact(v){v=normalizeStreet(v);return STREET.test(v)?v:'';}
-  function zone(v){v=normalizeStreet(v);return ZONE.test(v)?v:'';}
-  function extract(text){
-    const source=raw(text);
-    if(!source)return '';
-    const patterns=[
-      /\b(?:Via\s*1|Adre[cç]a|Adreca|Ubicaci[oó]|Ubicacio|Lloc|Loc)\s*:?\s*((?:AV|AV\.|AVDA|AVGDA|C|C\.|CL|CR|CARRER|PL|PÇA|PLAÇA|PG|PS|PASSEIG|CTRA|RBLA|PTGE|TRAV|CAM[IÍ]|URB)[^.;|\n]{3,140})/i,
-      /\b((?:AV|AV\.|AVDA|AVGDA|C|C\.|CL|CR|CARRER|PL|PÇA|PLAÇA|PG|PS|PASSEIG|CTRA|RBLA|PTGE|TRAV|CAM[IÍ]|URB)\s+[A-ZÀ-ÿ0-9'’.,\- ]{3,120})/i,
-      /\b(Zona\s+[A-ZÀ-ÿ0-9'’.,\- ]{3,90})/i,
-      /\b(S['’]?\s*Agar[oó]|Platja\s+d['’]?Aro|Castell\s+d['’]?Aro|Mas\s+Nou|Mas\s+Semi|Politur|Port\s+d['’]?Aro|Costa\s+Brava)\b/i
-    ];
-    for(const pattern of patterns){
-      const match=source.match(pattern);
-      if(match&&match[1])return normalizeStreet(match[1]);
-    }
-    return '';
-  }
-  function bestAddress(item){
-    const candidates=[
-      item&&item.address,
-      item&&item.displayAddress,
-      item&&item.zone,
-      item&&item.location,
-      item&&item.detail,
-      extract(item&&item.desc),
-      extract(item&&item.summary),
-      extract(item&&item.rawBlock),
-      item&&item.municipality
-    ].map(normalizeStreet).filter(valid);
-
-    const street=candidates.map(exact).find(Boolean);
-    if(street)return street;
-    const area=candidates.map(zone).find(Boolean);
-    if(area)return area;
-    return candidates[0]||'Ubicació pendent de validar';
-  }
-  function getData(){try{if(typeof DATA!=='undefined'&&DATA)return DATA;}catch(e){}return window.DATA||null;}
-  function getCoords(value,item){try{return typeof coords==='function'?coords(value,item&&item.index,item&&item.sourceType):[41.8162,3.0608];}catch(e){return [41.8162,3.0608];}}
-  function normalizeService(item){
-    if(!item||typeof item!=='object')return item;
-    const next=bestAddress(item);
-    if(next&&!BAD.test(next)){
-      item.zone=next;
-      item.displayAddress=next;
-      if(!item.address||BAD.test(String(item.address)))item.address=next;
-      if(!Array.isArray(item.coordinates)||item.coordinates.length!==2)item.coordinates=getCoords(next,item);
-    }
-    return item;
-  }
-  function normalizeDataset(dataset){
-    if(!dataset||typeof dataset!=='object')return dataset;
-    ['services','hotspots','timeline'].forEach(function(key){
-      if(Array.isArray(dataset[key]))dataset[key].forEach(normalizeService);
-    });
-    if(dataset.summary&&Array.isArray(dataset.services)&&typeof summary==='function'){
-      try{dataset.summary=summary(dataset.services,(dataset.source&&dataset.source.reports)||1);}catch(e){}
-    }
-    return dataset;
-  }
-  function normalizeMemory(){const d=getData();if(d)normalizeDataset(d);}
-  function normalizeHistoryObject(entry){
-    if(entry&&entry.dataset)normalizeDataset(entry.dataset);
-    else normalizeDataset(entry);
-    return entry;
-  }
-  function normalizeStorage(){
-    try{
-      const rawValue=localStorage.getItem(STORAGE_KEY);
-      if(!rawValue)return;
-      const history=JSON.parse(rawValue);
-      if(!Array.isArray(history))return;
-      const before=JSON.stringify(history);
-      history.forEach(normalizeHistoryObject);
-      if(JSON.stringify(history)!==before)localStorage.setItem(STORAGE_KEY,JSON.stringify(history));
-    }catch(e){}
-  }
-  function cleanVisible(){
-    document.querySelectorAll('#sourcePredictionGrid p,#sourcePredictionGrid small,#hotZones strong,#hotZones p,#timelineRows strong,#aiFeed span').forEach(function(el){
-      if(BAD.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(BAD,'Ubicació pendent de validar');
+  function rebuild(text){
+    const lines=String(text||'').replace(/\r/g,'\n').split('\n').map(x=>x.trim()); const out=[];
+    for(let i=0;i<lines.length;i++){
+      if(!isLabel(lines[i],lines[i+1])){out.push(lines[i]);continue;}
+      let start=(norm(lines[i])==='via'&&norm(lines[i+1])==='1')?i+2:i+1, parts=[], end=i;
+      for(let j=start;j<Math.min(lines.length,start+14);j++){
+        const cur=clean(lines[j]); if(!cur)continue; if(STOP.test(norm(cur)))break; if(isLabel(cur,lines[j+1])&&j>start)break; if(SKIP.test(norm(cur)))continue;
+        parts.push(cur); end=j; const merged=join(parts);
+        if((ROAD.test(parts[0]||'')||STREET.test(merged))&&/\d{1,4}/.test(merged))break;
       }
-    });
+      const merged=join(parts); out.push('Via 1: '+(merged||clean(lines[i]))); i=end;
+    }
+    return out.join('\n');
   }
-
-  const previousBuild=typeof build==='function'?build:(typeof window.build==='function'?window.build:null);
-  function finalBuild(o){
-    const src=o||{};
-    const z=bestAddress(src);
-    const cr=getCoords(z,src);
-    return {
-      id:src.prefix+'-'+src.serviceId+'-'+src.index,
-      serviceId:src.serviceId,
-      time:typeof time==='function'?time(src.dateTime):'--:--',
-      title:safeLine(src.title).slice(0,160),
-      category:src.cat,
-      priority:src.pr,
-      score:typeof score==='function'?score(src.pr):3,
-      zone:z,
-      displayAddress:z,
-      address:z,
-      summary:safeLine(src.desc).slice(0,520),
-      sourceType:src.sourceType,
-      sourceLabel:typeof sName==='function'?sName(src.sourceType):src.sourceType,
-      sourceBadge:src.sourceType==='PL'?'PL':src.sourceType==='MOSSOS'?'ME':'--',
-      coordinates:cr
-    };
+  function extract(text){
+    const s=raw(text); if(!s)return '';
+    const m=s.match(/(?:Via\s*1|Adre[cç]a|Ubicaci[oó]|Lloc|Loc)\s*:?\s*((?:AV|AVDA|AVGDA|C|C\.|CL|CR|CARRER|PL|PÇA|PLAÇA|PG|PS|PASSEIG|CTRA|RBLA|PTGE|TRAV|CAM[IÍ]|URB|Avinguda|Carrer|Plaça|Passeig|Carretera)[^.;|\n]{3,150})/i)||s.match(/\b((?:AV|AVDA|AVGDA|C|C\.|CL|CR|CARRER|PL|PÇA|PLAÇA|PG|PS|PASSEIG|CTRA|RBLA|PTGE|TRAV|CAM[IÍ]|URB)\s+[A-ZÀ-ÿ0-9'’.,\- ]{3,120})/i);
+    return m&&m[1]?street(m[1]):'';
   }
+  function best(o){
+    const a=[o&&o.address,o&&o.displayAddress,o&&o.zone,o&&o.location,o&&o.detail,extract(o&&o.desc),extract(o&&o.summary)].map(street).filter(x=>x&&!BAD.test(x));
+    return a.find(x=>STREET.test(x))||a[0]||'Ubicació pendent de validar';
+  }
+  const oldPdf=typeof pdfText==='function'?pdfText:window.pdfText;
+  if(oldPdf){const wrapped=async function(file){const t=await oldPdf.apply(this,arguments);const r=rebuild(t);window.SIPDA_LAST_PDF_TEXT=r;window.SIPDA_LAST_PDF_TEXT_ORIGINAL=t;return r;};try{pdfText=wrapped;}catch(e){}window.pdfText=wrapped;}
+  function coord(z,o){try{return typeof coords==='function'?coords(z,o&&o.index,o&&o.sourceType):[41.8162,3.0608];}catch(e){return[41.8162,3.0608];}}
+  function finalBuild(o){o=o||{};const z=best(o);return{id:o.prefix+'-'+o.serviceId+'-'+o.index,serviceId:o.serviceId,time:typeof time==='function'?time(o.dateTime):'--:--',title:(typeof line==='function'?line(o.title):raw(o.title)).slice(0,160),category:o.cat,priority:o.pr,score:typeof score==='function'?score(o.pr):3,zone:z,displayAddress:z,address:z,summary:(typeof line==='function'?line(o.desc):raw(o.desc)).slice(0,520),sourceType:o.sourceType,sourceLabel:typeof sName==='function'?sName(o.sourceType):o.sourceType,sourceBadge:o.sourceType==='PL'?'PL':o.sourceType==='MOSSOS'?'ME':'--',coordinates:coord(z,o)};}
   try{build=finalBuild;}catch(e){}window.build=finalBuild;
-
-  const previousSave=typeof save==='function'?save:null;
-  if(previousSave){try{save=function(history){if(Array.isArray(history))history.forEach(normalizeHistoryObject);return previousSave(history);};window.save=save;}catch(e){}}
-
-  const previousMerge=typeof merge==='function'?merge:null;
-  if(previousMerge){try{merge=function(history){if(Array.isArray(history))history.forEach(normalizeHistoryObject);const merged=previousMerge(history);return normalizeDataset(merged);};window.merge=merge;}catch(e){}}
-
-  const previousRender=typeof render==='function'?render:(typeof window.render==='function'?window.render:null);
-  function renderAddressSafe(){
-    normalizeStorage();
-    normalizeMemory();
-    if(previousRender)previousRender.apply(this,arguments);
-    normalizeMemory();
-    cleanVisible();
-  }
-  try{render=renderAddressSafe;}catch(e){}window.render=renderAddressSafe;
-
-  document.addEventListener('DOMContentLoaded',function(){
-    normalizeStorage();
-    setTimeout(function(){normalizeMemory();cleanVisible();},250);
-    setTimeout(function(){normalizeMemory();cleanVisible();},1200);
-    setTimeout(function(){normalizeMemory();cleanVisible();},2500);
-  });
-
-  window.SIPDA_ADDRESS_FINAL={
-    active:true,
-    build:BUILD,
-    previousBuild:!!previousBuild,
-    bestAddress:bestAddress,
-    normalize:normalizeMemory,
-    normalizeStorage:normalizeStorage,
-    testExtract:extract
-  };
+  window.SIPDA_ADDRESS_FINAL={active:true,build:BUILD,rebuildPdfAddresses:rebuild,bestAddress:best,wrappedPdfText:!!oldPdf};
 })();
