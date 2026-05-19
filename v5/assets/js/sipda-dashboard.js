@@ -22,15 +22,26 @@ function normalizeRiskLevel(level) {
   return "medium";
 }
 
-function riskGaugeValue(risk) {
-  if (risk === "high") return 86;
-  if (risk === "medium") return 56;
+function riskScore(risk) {
+  if (risk === "high") return 84;
+  if (risk === "medium") return 58;
   if (risk === "low") return 24;
   return 50;
 }
 
-function riskGaugeRotation(risk) {
-  return -90 + (riskGaugeValue(risk) / 100) * 180;
+function riskColor(risk) {
+  if (risk === "high") return "#ef4444";
+  if (risk === "medium") return "#f59e0b";
+  if (risk === "low") return "#16a34a";
+  return "#111111";
+}
+
+function riskNeedleRotation(risk) {
+  return -92 + (riskScore(risk) / 100) * 184;
+}
+
+function riskArcLength(risk) {
+  return Math.round((riskScore(risk) / 100) * 188);
 }
 
 function getKpi(data, key, fallback = 0) {
@@ -51,27 +62,45 @@ function renderDashboard(data) {
 function renderRiskGauge(level) {
   const risk = normalizeRiskLevel(level);
   const label = riskLabel(risk);
-  const rotation = riskGaugeRotation(risk);
+  const score = riskScore(risk);
+  const color = riskColor(risk);
+  const rotation = riskNeedleRotation(risk);
+  const arc = riskArcLength(risk);
 
   return `
-    <div class="risk-gauge-card risk-${risk}">
-      <div class="risk-gauge-copy">
+    <div class="risk-module risk-${risk}" style="--risk-color:${color};--needle-rotation:${rotation}deg;--risk-arc:${arc};">
+      <div class="risk-module-head">
         <span>Risc operatiu</span>
-        <strong>${label}</strong>
-        <em class="trend ${riskClass(risk)}">nivell actiu</em>
+        <em>${score}/100</em>
       </div>
-      <div class="risk-gauge" aria-label="Nivell de risc ${label}">
-        <svg viewBox="0 0 160 94" role="img">
-          <path class="gauge-track" d="M22 78 A58 58 0 0 1 138 78" />
-          <path class="gauge-low" d="M22 78 A58 58 0 0 1 60 27" />
-          <path class="gauge-medium" d="M60 27 A58 58 0 0 1 100 27" />
-          <path class="gauge-high" d="M100 27 A58 58 0 0 1 138 78" />
-          <g class="gauge-needle" style="transform: rotate(${rotation}deg); transform-origin: 80px 78px;">
-            <line x1="80" y1="78" x2="80" y2="31" />
-          </g>
-          <circle class="gauge-hub" cx="80" cy="78" r="5" />
-        </svg>
-        <div class="gauge-scale"><span>Baix</span><span>Mitjà</span><span>Alt</span></div>
+      <div class="risk-module-body">
+        <div class="risk-readout">
+          <strong>${label}</strong>
+          <small>nivell actual</small>
+        </div>
+        <div class="risk-dial" aria-label="Nivell de risc ${label}">
+          <svg viewBox="0 0 220 128" role="img">
+            <defs>
+              <filter id="gaugeShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="rgba(0,0,0,.18)" />
+              </filter>
+            </defs>
+            <path class="dial-track" d="M30 104 A80 80 0 0 1 190 104" />
+            <path class="dial-progress" d="M30 104 A80 80 0 0 1 190 104" pathLength="188" />
+            <g class="dial-ticks">
+              <line x1="30" y1="104" x2="40" y2="98" />
+              <line x1="58" y1="48" x2="66" y2="57" />
+              <line x1="110" y1="24" x2="110" y2="37" />
+              <line x1="162" y1="48" x2="154" y2="57" />
+              <line x1="190" y1="104" x2="180" y2="98" />
+            </g>
+            <g class="dial-needle">
+              <line x1="110" y1="104" x2="110" y2="43" />
+              <circle cx="110" cy="104" r="8" />
+            </g>
+          </svg>
+          <div class="risk-scale"><span>BAIX</span><span>MITJÀ</span><span>ALT</span></div>
+        </div>
       </div>
     </div>
   `;
