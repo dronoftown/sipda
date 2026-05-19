@@ -1,10 +1,57 @@
-const SIPDA_IMPORT_DEBUG = true;
+let pendingSipdaDataset = null;
+let pendingSipdaFileName = "";
 
 function setImportStatus(message, type = "info") {
   const status = document.getElementById("importStatus");
-  if (!status) return;
-  status.textContent = message;
-  status.dataset.type = type;
+  const modalStatus = document.getElementById("importModalStatus");
+  if (status) {
+    status.textContent = message;
+    status.dataset.type = type;
+  }
+  if (modalStatus) {
+    modalStatus.textContent = message;
+    modalStatus.dataset.type = type;
+  }
+}
+
+function setImportProgress(value) {
+  const bar = document.getElementById("importProgressBar");
+  if (bar) bar.style.width = `${Math.max(0, Math.min(100, value))}%`;
+}
+
+function setImportStep(step, state) {
+  const element = document.querySelector(`[data-import-step="${step}"]`);
+  if (!element) return;
+  element.dataset.state = state;
+}
+
+function resetImportModal() {
+  pendingSipdaDataset = null;
+  pendingSipdaFileName = "";
+  setImportProgress(0);
+  setImportStatus("Selecciona un PDF de novetats per iniciar l'anàlisi.", "info");
+  ["upload", "read", "analyze", "ready"].forEach((step) => setImportStep(step, "pending"));
+  const summary = document.getElementById("importModalSummary");
+  const updateButton = document.getElementById("importUpdatePanel");
+  const input = document.getElementById("modalPdfInput");
+  if (summary) summary.innerHTML = "";
+  if (updateButton) updateButton.disabled = true;
+  if (input) input.value = "";
+}
+
+function openImportModal() {
+  const modal = document.getElementById("importModal");
+  if (!modal) return;
+  resetImportModal();
+  modal.hidden = false;
+  document.body.classList.add("import-modal-open");
+}
+
+function closeImportModal() {
+  const modal = document.getElementById("importModal");
+  if (!modal) return;
+  modal.hidden = true;
+  document.body.classList.remove("import-modal-open");
 }
 
 async function getPdfJs() {
@@ -157,7 +204,7 @@ function protectAddress(address, title) {
   return compactLine(address) || "Zona operativa";
 }
 
-function buildGeocode(address, detail, origin) {
+function buildGeocode(address, detail) {
   const base = compactLine(address || detail || "");
   if (!base || /^zo\s/i.test(base)) return `${detail || "Platja d'Aro"}, Girona, Spain`;
   if (/girona|spain|catalunya|cataluna|barcelona/i.test(base)) return base;
@@ -190,7 +237,6 @@ function parseServices(text, fileName) {
     const risk = classifyRisk(title, description, category);
     const dateTime = extractDateTime(block);
     const serviceId = extractServiceId(block, index);
-
     const hasOperationalSignal = address || detail || /robatori|furt|baralla|accident|control|vigil|inund|menor|vehicle|alarma|assistencial|transit|trànsit/i.test(`${title} ${description}`);
     if (!hasOperationalSignal) return;
 
@@ -206,7 +252,7 @@ function parseServices(text, fileName) {
       zone: detail || protectAddress(address, title),
       sourceAddress: address,
       displayAddress: protectAddress(address || detail, title),
-      geocodeAddress: buildGeocode(address, detail, origin),
+      geocodeAddress: buildGeocode(address, detail),
       geocodePrecision: address ? "via_o_lloc_importat" : "zona_importada",
       summary: description,
       result: extractResult(block),
@@ -270,6 +316,20 @@ function buildIntelligenceDataset(parsed, fileName, rawText) {
   };
 }
 
+function renderPendingSummary(dataset) {
+  const summary = document.getElementById("importModalSummary");
+  if (!summary) return;
+  summary.innerHTML = `
+    <div class="import-result-grid">
+      <div><span>Origen</span><strong>${dataset.source.origin}</strong></div>
+      <div><span>Serveis</span><strong>${dataset.summary.totalServices}</strong></div>
+      <div><span>Rellevants</span><strong>${dataset.summary.relevantServices}</strong></div>
+      <div><span>Risc</span><strong>${dataset.summary.riskLevel}</strong></div>
+    </div>
+    <p>${dataset.summary.executiveRead}</p>
+  `;
+}
+
 async function extractPdfText(file) {
   const pdfjs = await getPdfJs();
   const arrayBuffer = await file.arrayBuffer();
@@ -278,6 +338,7 @@ async function extractPdfText(file) {
 
   for (let page = 1; page <= pdf.numPages; page += 1) {
     setImportStatus(`Llegint PDF... pàgina ${page}/${pdf.numPages}`, "info");
+    setImportProgress(15 + Math.round((page / pdf.numPages) * 35));
     const pdfPage = await pdf.getPage(page);
     const content = await pdfPage.getTextContent();
     text += content.items.map((item) => item.str).join("\n") + "\n\n";
@@ -291,44 +352,79 @@ async function handleV6Import(event) {
   if (!file) return;
 
   try {
-    setImportStatus(`Rebut: ${file.name}. Iniciant lectura...`, "info");
+    pendingSipdaDataset = null;
+    pendingSipdaFileName = file.name;
+    setImportStep("upload", "done");
+    setImportStep("read", "active");
+    setImportProgress(12);
+    setImportStatus(`Novetat rebuda: ${file.name}. Iniciant lectura...`, "info");
+
     const text = await extractPdfText(file);
     if (!text || text.length < 80) {
+      setImportStep("read", "error");
       setImportStatus("No s'ha pogut extreure text útil del PDF. Pot ser escanejat com a imatge.", "error");
       return;
     }
 
-    setImportStatus("Text extret. Aplicant motor d'intel·ligència SIPDA...", "info");
+    setImportStep("read", "done");
+    setImportStep("analyze", "active");
+    setImportProgress(64);
+    setImportStatus("Text extret. Aplicant intel·ligència policial SIPDA...", "info");
+
+    await new Promise((resolve) => setTimeout(resolve, 520));
     const parsed = parseServices(text, file.name);
     if (!parsed.services.length) {
+      setImportStep("analyze", "error");
       setImportStatus("S'ha llegit el PDF, però no s'han detectat serveis operatius. Revisa el format del document.", "warning");
       console.warn("SIPDA import text preview", text.slice(0, 2500));
       return;
     }
 
     const dataset = buildIntelligenceDataset(parsed, file.name, text);
-    window.SIPDA_OPERATIONAL_DATA = dataset;
-    window.dispatchEvent(new CustomEvent("sipda:data-updated", { detail: dataset }));
-    setImportStatus(`Informe analitzat: ${dataset.summary.totalServices} serveis · ${dataset.summary.relevantServices} rellevants · origen ${dataset.source.origin}.`, "success");
+    pendingSipdaDataset = dataset;
+    setImportStep("analyze", "done");
+    setImportStep("ready", "done");
+    setImportProgress(100);
+    renderPendingSummary(dataset);
+    const updateButton = document.getElementById("importUpdatePanel");
+    if (updateButton) updateButton.disabled = false;
+    setImportStatus(`Anàlisi completada: ${dataset.summary.totalServices} serveis · ${dataset.summary.relevantServices} rellevants.`, "success");
   } catch (error) {
     console.error("SIPDA v6 import error", error);
     setImportStatus(`Error important l'informe: ${error.message || "error desconegut"}.`, "error");
+    setImportStep("analyze", "error");
   } finally {
     event.target.value = "";
   }
 }
 
+function applyPendingDataset() {
+  if (!pendingSipdaDataset) {
+    setImportStatus("Encara no hi ha cap anàlisi preparat per actualitzar el panell.", "warning");
+    return;
+  }
+  window.SIPDA_OPERATIONAL_DATA = pendingSipdaDataset;
+  window.dispatchEvent(new CustomEvent("sipda:data-updated", { detail: pendingSipdaDataset }));
+  setImportStatus(`Panell actualitzat amb ${pendingSipdaFileName}.`, "success");
+  setTimeout(closeImportModal, 320);
+}
+
 function bindV6Import() {
-  const input = document.getElementById("pdfImportInput");
   const topButton = document.getElementById("pdfImportButton");
   const uploadBox = document.querySelector(".upload-box");
+  const closeButton = document.getElementById("importModalClose");
+  const cancelButton = document.getElementById("importCancel");
+  const chooseButton = document.getElementById("importChooseFile");
+  const modalInput = document.getElementById("modalPdfInput");
+  const updateButton = document.getElementById("importUpdatePanel");
 
-  if (input) {
-    input.removeEventListener("change", window.handlePdfImport || (() => {}));
-    input.addEventListener("change", handleV6Import);
-  }
-  if (topButton && input) topButton.addEventListener("click", () => input.click());
-  if (uploadBox && input) uploadBox.addEventListener("click", () => input.click());
+  if (topButton) topButton.addEventListener("click", openImportModal);
+  if (uploadBox) uploadBox.addEventListener("click", openImportModal);
+  if (closeButton) closeButton.addEventListener("click", closeImportModal);
+  if (cancelButton) cancelButton.addEventListener("click", closeImportModal);
+  if (chooseButton && modalInput) chooseButton.addEventListener("click", () => modalInput.click());
+  if (modalInput) modalInput.addEventListener("change", handleV6Import);
+  if (updateButton) updateButton.addEventListener("click", applyPendingDataset);
 }
 
 document.addEventListener("DOMContentLoaded", bindV6Import);
