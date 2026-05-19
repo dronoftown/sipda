@@ -1,6 +1,6 @@
 const SIPDA_MAP_CONFIG = {
-  center: [3.0636, 41.8170],
-  zoom: 13.75,
+  center: [3.0568, 41.8138],
+  zoom: 14.05,
   pitch: 62,
   bearing: -16
 };
@@ -13,6 +13,22 @@ function showMapTokenNotice(message) {
     const span = notice.querySelector("span");
     if (span) span.textContent = message;
   }
+}
+
+function buildPopupHTML(properties) {
+  const riskLabel = {
+    high: "Alto",
+    medium: "Medio",
+    low: "Bajo"
+  }[properties.risk] || "Sin clasificar";
+
+  return `
+    <div class="sipda-popup">
+      <strong>${properties.zone || "Zona operativa"}</strong>
+      <span>${properties.type || "Incidencia"} · Riesgo ${riskLabel}</span>
+      <em>Intensidad ${properties.intensity || 0}/10</em>
+    </div>
+  `;
 }
 
 function getFirstSymbolLayerId(map) {
@@ -141,6 +157,74 @@ function initSipdaMap() {
           1, "rgba(239,68,68,0.78)"
         ]
       }
+    });
+
+    map.addLayer({
+      id: "sipda-risk-points",
+      type: "circle",
+      source: "sipda-incidents",
+      paint: {
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["get", "intensity"],
+          1, 7,
+          10, 11
+        ],
+        "circle-color": [
+          "match",
+          ["get", "risk"],
+          "high", "#ef4444",
+          "medium", "#f59e0b",
+          "low", "#16a34a",
+          "#0054A6"
+        ],
+        "circle-stroke-color": "rgba(255,255,255,0.92)",
+        "circle-stroke-width": 2,
+        "circle-opacity": 0.92
+      }
+    });
+
+    map.addLayer({
+      id: "sipda-risk-labels",
+      type: "symbol",
+      source: "sipda-incidents",
+      layout: {
+        "text-field": ["get", "levelLabel"],
+        "text-size": 11,
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-offset": [0, 1.45],
+        "text-anchor": "top",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      },
+      paint: {
+        "text-color": "#ffffff",
+        "text-halo-color": "rgba(7,18,37,0.95)",
+        "text-halo-width": 1.6
+      }
+    });
+
+    map.on("click", "sipda-risk-points", (event) => {
+      const feature = event.features && event.features[0];
+      if (!feature) return;
+
+      new mapboxgl.Popup({
+        closeButton: true,
+        closeOnClick: true,
+        offset: 16
+      })
+        .setLngLat(feature.geometry.coordinates)
+        .setHTML(buildPopupHTML(feature.properties || {}))
+        .addTo(map);
+    });
+
+    map.on("mouseenter", "sipda-risk-points", () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+
+    map.on("mouseleave", "sipda-risk-points", () => {
+      map.getCanvas().style.cursor = "";
     });
   });
 
