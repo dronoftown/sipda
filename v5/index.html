@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>SIPDA · Software Edition</title>
+  <title>SIPDA · Edició operativa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -13,80 +13,49 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
 </head>
-<body>
+<body class="is-locked">
+  <section class="login-screen" aria-label="Accés a SIPDA">
+    <form id="loginForm" class="login-card">
+      <div class="login-brand"><div class="brand-icon" aria-hidden="true">S</div><div><strong>SIPDA</strong><span>Accés restringit</span></div></div>
+      <h1>Sistema Intel·ligent Policial de Direcció i Anàlisi</h1>
+      <p>Introdueix les credencials autoritzades per accedir al centre de comandament.</p>
+      <label for="loginUser">Usuari</label>
+      <input id="loginUser" name="username" autocomplete="username" required>
+      <label for="loginPassword">Contrasenya</label>
+      <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn dark login-submit" type="submit">Accedir</button>
+      <span id="loginMessage" class="login-message" aria-live="polite"></span>
+      <small>Protecció frontal per a entorn web estàtic.</small>
+    </form>
+  </section>
+
   <div class="software-shell">
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-icon" aria-hidden="true">S</div>
-        <div><strong>SIPDA</strong><span>Police intelligence</span></div>
-      </div>
-      <nav class="side-nav" aria-label="Navegación principal">
-        <a class="active" href="#"><i data-lucide="scan-line"></i><span>Situación</span></a>
-        <a href="#"><i data-lucide="map"></i><span>Mapa operativo</span></a>
-        <a href="#"><i data-lucide="brain-circuit"></i><span>Inteligencia</span></a>
-        <a href="#"><i data-lucide="line-chart"></i><span>Predicción</span></a>
-        <a href="#"><i data-lucide="file-text"></i><span>Informes</span></a>
-        <a href="#"><i data-lucide="shield-check"></i><span>Dispositivos</span></a>
-      </nav>
-      <div class="unit-card"><span>Unidad activa</span><strong>Policía Local</strong><small>Castell d'Aro · Platja d'Aro · S'Agaró</small></div>
+      <div class="brand"><div class="brand-icon" aria-hidden="true">S</div><div><strong>SIPDA</strong><span>Intel·ligència policial</span></div></div>
+      <nav class="side-nav" aria-label="Navegació principal"><a class="active" href="#"><i data-lucide="scan-line"></i><span>Situació</span></a><a href="#"><i data-lucide="map"></i><span>Mapa operatiu</span></a><a href="#"><i data-lucide="brain-circuit"></i><span>Intel·ligència</span></a><a href="#"><i data-lucide="line-chart"></i><span>Predicció</span></a><a href="#"><i data-lucide="file-text"></i><span>Informes</span></a><a href="#"><i data-lucide="shield-check"></i><span>Dispositius</span></a></nav>
+      <div class="unit-card"><span>Unitat activa</span><strong>Policia Local</strong><small>Castell d'Aro · Platja d'Aro · S'Agaró</small></div>
     </aside>
 
     <main class="workspace">
-      <header class="topbar">
-        <div><p class="breadcrumb">SIPDA / Command workspace / Semana actual</p><h1>Centro de inteligencia municipal</h1></div>
-        <div class="top-actions">
-          <div class="command-search"><i data-lucide="search"></i><span>Buscar novedad, zona o informe</span><kbd>⌘K</kbd></div>
-          <button class="btn neutral"><i data-lucide="calendar-days"></i>Periodo</button>
-          <button class="btn dark"><i data-lucide="upload-cloud"></i>Importar informe</button>
-        </div>
-      </header>
+      <header class="topbar"><div><p class="breadcrumb">SIPDA / Espai de comandament / Setmana actual</p><h1>Centre d’intel·ligència municipal</h1></div><div class="top-actions"><div class="command-search"><i data-lucide="search"></i><span>Cercar novetat, zona o informe</span><kbd>⌘K</kbd></div><button class="btn neutral"><i data-lucide="calendar-days"></i>Període</button><button id="pdfImportButton" class="btn dark" type="button"><i data-lucide="upload-cloud"></i>Importar informe</button><button id="logoutButton" class="btn neutral" type="button"><i data-lucide="log-out"></i>Sortir</button><input id="pdfImportInput" type="file" accept="application/pdf" hidden></div></header>
 
-      <section class="status-row" aria-label="Resumen ejecutivo">
-        <article class="metric-card"><span>Incidencias</span><div><strong>214</strong><em class="trend danger">+18%</em></div></article>
-        <article class="metric-card"><span>Asistenciales</span><div><strong>97</strong><em class="trend warning">+11%</em></div></article>
-        <article class="metric-card"><span>Tráfico</span><div><strong>58</strong><em class="trend warning">+8%</em></div></article>
-        <article class="metric-card"><span>Riesgo operativo</span><div><strong>Medio</strong><em class="trend warning">Activo</em></div></article>
-      </section>
+      <section class="status-row" aria-label="Resum executiu"><article class="metric-card"><span>Serveis</span><div><strong>--</strong><em class="trend warning">carregant</em></div></article><article class="metric-card"><span>Trànsit</span><div><strong>--</strong><em class="trend warning">pendent</em></div></article><article class="metric-card"><span>Seguretat</span><div><strong>--</strong><em class="trend danger">pendent</em></div></article><article class="metric-card"><span>Risc operatiu</span><div><strong>--</strong><em class="trend warning">actiu</em></div></article></section>
 
       <section class="main-grid">
-        <article class="software-card map-card">
-          <div class="card-header">
-            <div><h2>Mapa operativo</h2><p>Satélite con calles, presión agregada y puntos de clasificación táctica.</p></div>
-            <div class="segmented-control" aria-label="Capas de mapa"><button class="active" type="button" data-layer-mode="all">Todo</button><button type="button" data-layer-mode="heat">Calor</button><button type="button" data-layer-mode="points">Puntos</button></div>
-          </div>
-          <div class="map-stage">
-            <div id="sipdaMap" class="map-canvas" aria-label="Mapa SIPDA"></div>
-            <div class="map-toolbar"><strong>Live map</strong><span>Marina · Rubina · Rotonda súper</span></div>
-            <div class="map-legend"><span><i class="dot high"></i>Alto</span><span><i class="dot medium"></i>Medio</span><span><i class="dot low"></i>Bajo</span></div>
-            <div id="mapTokenNotice" class="map-notice" hidden><strong>Modo alternativo</strong><span>Mapa real cargado sin token Mapbox.</span></div>
-          </div>
-        </article>
-
-        <aside class="right-stack">
-          <article class="software-card ai-card">
-            <div class="card-header compact"><div><h2>SIPDA Intelligence</h2><p>Lectura ejecutiva generada sobre datos agregados.</p></div><span class="state-pill">IA lista</span></div>
-            <div class="ai-feed"><div class="feed-item"><i class="marker danger"></i><div><strong>Presión alta</strong><span>Actividad relevante en Marina de Port d'Aro y Cala la Rubina.</span></div></div><div class="feed-item"><i class="marker warning"></i><div><strong>Movilidad sensible</strong><span>Rotonda del súper marcada como punto de cruce operativo.</span></div></div><div class="feed-item"><i class="marker neutral"></i><div><strong>Recomendación</strong><span>Activar observación preventiva y verificar franja horaria de máxima ocupación.</span></div></div></div>
-          </article>
-          <article class="software-card risk-list">
-            <div class="card-header compact"><div><h2>Clasificación táctica</h2><p>Resumen por zona analizada.</p></div></div>
-            <div class="zone-row"><span><i class="dot high"></i>Marina Port d'Aro</span><b>ALTO</b></div><div class="zone-row"><span><i class="dot high"></i>Cala la Rubina</span><b>ALTO</b></div><div class="zone-row"><span><i class="dot medium"></i>Rotonda del súper</span><b>MEDIO</b></div><div class="zone-row"><span><i class="dot low"></i>Punto apoyo</span><b>BAJO</b></div>
-          </article>
-        </aside>
+        <article class="software-card map-card"><div class="card-header"><div><h2>Mapa operatiu</h2><p>Mapa alimentat amb adreces reals anonimitzades del comunicat policial.</p></div><div class="segmented-control" aria-label="Capes del mapa"><button class="active" type="button" data-layer-mode="all">Tot</button><button type="button" data-layer-mode="heat">Calor</button><button type="button" data-layer-mode="points">Punts</button></div></div><div class="map-stage"><div id="sipdaMap" class="map-canvas" aria-label="Mapa SIPDA"></div><div class="map-toolbar"><strong>Mapa viu</strong><span>Adreces reals · Risc · Calor operatiu</span></div><div class="map-legend"><span><i class="dot high"></i>Alt</span><span><i class="dot medium"></i>Mitjà</span><span><i class="dot low"></i>Baix</span></div><div id="mapTokenNotice" class="map-notice" hidden><strong>Mapa operatiu</strong><span>Vista alternativa activa.</span></div></div></article>
+        <aside class="right-stack"><article class="software-card ai-card"><div class="card-header compact"><div><h2>Intel·ligència SIPDA</h2><p>Lectura executiva generada sobre dades agregades.</p></div><span class="state-pill">IA preparada</span></div><div class="ai-feed"><div class="feed-item"><i class="marker neutral"></i><div><strong>Carregant</strong><span>Esperant dades operatives.</span></div></div></div></article><article class="software-card risk-list"><div class="card-header compact"><div><h2>Classificació tàctica</h2><p>Resum per zona analitzada.</p></div></div><div class="zone-row"><span><i class="dot low"></i>Sense dades carregades</span><b>--</b></div></article></aside>
       </section>
 
-      <section class="bottom-grid">
-        <article class="software-card table-card"><div class="card-header compact"><div><h2>Timeline operativo</h2><p>Últimas entradas normalizadas.</p></div></div><div class="timeline-row"><time>19:35</time><span>Convivencia</span><strong>Cala la Rubina</strong><em class="badge danger">ALTO</em></div><div class="timeline-row"><time>20:10</time><span>Movilidad</span><strong>Rotonda del súper</strong><em class="badge warning">MEDIO</em></div><div class="timeline-row"><time>21:20</time><span>Afluencia</span><strong>Marina Port d'Aro</strong><em class="badge danger">ALTO</em></div></article>
-        <article class="software-card chart-card"><div class="card-header compact"><div><h2>Tendencia semanal</h2><p>Color solo funcional.</p></div></div><svg viewBox="0 0 360 150" role="img" aria-label="Tendencia semanal"><g class="grid-lines"><path d="M20 30H340M20 75H340M20 120H340"></path></g><polyline class="trend-line" points="20,118 72,96 124,104 176,72 228,84 280,48 340,38" fill="none"></polyline><circle class="trend-dot" cx="340" cy="38" r="5"></circle></svg></article>
-        <article class="software-card upload-panel"><div class="card-header compact"><div><h2>Entrada documental</h2><p>Lectura inteligente de PDF y novedades policiales.</p></div></div><button class="upload-box" type="button"><i data-lucide="file-up"></i><span>Arrastra o selecciona informe</span></button></article>
-      </section>
+      <section class="bottom-grid"><article class="software-card table-card"><div class="card-header compact"><div><h2>Línia temporal operativa</h2><p>Últimes entrades normalitzades.</p></div></div><div class="timeline-row"><time>--:--</time><span>Esperant dades</span><strong>Sense zona</strong><em class="badge warning">INFO</em></div></article><article class="software-card chart-card"><div class="card-header compact"><div><h2>Tendència setmanal</h2><p>Color només funcional.</p></div></div><svg viewBox="0 0 360 150" role="img" aria-label="Tendència setmanal"><g class="grid-lines"><path d="M20 30H340M20 75H340M20 120H340"></path></g><polyline class="trend-line" points="20,118 72,96 124,104 176,72 228,84 280,48 340,38" fill="none"></polyline><circle class="trend-dot" cx="340" cy="38" r="5"></circle></svg></article><article class="software-card upload-panel"><div class="card-header compact"><div><h2>Entrada documental</h2><p>Lectura intel·ligent de PDF i novetats policials.</p></div></div><button class="upload-box" type="button"><i data-lucide="file-up"></i><span>Selecciona un informe PDF</span></button><p id="importStatus" class="import-status" data-type="info">Cap importació local activa.</p></article></section>
     </main>
   </div>
-
-  <nav class="mobile-nav" aria-label="Navegación móvil"><a class="active" href="#"><i data-lucide="scan-line"></i><span>Inicio</span></a><a href="#"><i data-lucide="map"></i><span>Mapa</span></a><a href="#"><i data-lucide="brain-circuit"></i><span>IA</span></a><a href="#"><i data-lucide="line-chart"></i><span>Riesgo</span></a><a href="#"><i data-lucide="file-text"></i><span>Docs</span></a></nav>
-
+  <nav class="mobile-nav" aria-label="Navegació mòbil"><a class="active" href="#"><i data-lucide="scan-line"></i><span>Inici</span></a><a href="#"><i data-lucide="map"></i><span>Mapa</span></a><a href="#"><i data-lucide="brain-circuit"></i><span>IA</span></a><a href="#"><i data-lucide="line-chart"></i><span>Risc</span></a><a href="#"><i data-lucide="file-text"></i><span>Docs</span></a></nav>
   <script src="../v4/assets/js/env.js"></script>
+  <script src="./assets/js/sipda-auth.js"></script>
   <script src="./assets/js/sipda-dashboard.js"></script>
   <script src="./assets/js/sipda-map.js"></script>
+  <script src="./assets/js/sipda-import.js"></script>
 </body>
 </html>
