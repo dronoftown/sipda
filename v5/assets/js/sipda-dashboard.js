@@ -33,15 +33,7 @@ function riskColor(risk) {
   if (risk === "high") return "#ef4444";
   if (risk === "medium") return "#f59e0b";
   if (risk === "low") return "#16a34a";
-  return "#111111";
-}
-
-function riskNeedleRotation(risk) {
-  return -92 + (riskScore(risk) / 100) * 184;
-}
-
-function riskArcLength(risk) {
-  return Math.round((riskScore(risk) / 100) * 188);
+  return "#ffffff";
 }
 
 function getKpi(data, key, fallback = 0) {
@@ -64,42 +56,25 @@ function renderRiskGauge(level) {
   const label = riskLabel(risk);
   const score = riskScore(risk);
   const color = riskColor(risk);
-  const rotation = riskNeedleRotation(risk);
-  const arc = riskArcLength(risk);
 
   return `
-    <div class="risk-module risk-${risk}" style="--risk-color:${color};--needle-rotation:${rotation}deg;--risk-arc:${arc};">
-      <div class="risk-module-head">
+    <div class="risk-black-module risk-${risk}" style="--risk-color:${color};--risk-score:${score}%;">
+      <div class="risk-black-head">
         <span>Risc operatiu</span>
         <em>${score}/100</em>
       </div>
-      <div class="risk-module-body">
-        <div class="risk-readout">
-          <strong>${label}</strong>
-          <small>nivell actual</small>
+      <div class="risk-black-main">
+        <strong>${label}</strong>
+        <small>Nivell actual</small>
+      </div>
+      <div class="risk-progress-panel" aria-label="Nivell de risc ${label}">
+        <div class="risk-progress-track">
+          <div class="risk-progress-fill"></div>
         </div>
-        <div class="risk-dial" aria-label="Nivell de risc ${label}">
-          <svg viewBox="0 0 220 128" role="img">
-            <defs>
-              <filter id="gaugeShadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="rgba(0,0,0,.18)" />
-              </filter>
-            </defs>
-            <path class="dial-track" d="M30 104 A80 80 0 0 1 190 104" />
-            <path class="dial-progress" d="M30 104 A80 80 0 0 1 190 104" pathLength="188" />
-            <g class="dial-ticks">
-              <line x1="30" y1="104" x2="40" y2="98" />
-              <line x1="58" y1="48" x2="66" y2="57" />
-              <line x1="110" y1="24" x2="110" y2="37" />
-              <line x1="162" y1="48" x2="154" y2="57" />
-              <line x1="190" y1="104" x2="180" y2="98" />
-            </g>
-            <g class="dial-needle">
-              <line x1="110" y1="104" x2="110" y2="43" />
-              <circle cx="110" cy="104" r="8" />
-            </g>
-          </svg>
-          <div class="risk-scale"><span>BAIX</span><span>MITJÀ</span><span>ALT</span></div>
+        <div class="risk-progress-scale">
+          <span>BAIX</span>
+          <span>MITJÀ</span>
+          <span>ALT</span>
         </div>
       </div>
     </div>
