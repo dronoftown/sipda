@@ -15,22 +15,6 @@ function showMapTokenNotice(message) {
   }
 }
 
-function buildPopupHTML(properties) {
-  const riskLabel = {
-    high: "Alto",
-    medium: "Medio",
-    low: "Bajo"
-  }[properties.risk] || "Sin clasificar";
-
-  return `
-    <div class="sipda-popup">
-      <strong>${properties.zone || "Zona operativa"}</strong>
-      <span>${properties.type || "Incidencia"} · Riesgo ${riskLabel}</span>
-      <em>Intensidad ${properties.intensity || 0}/10</em>
-    </div>
-  `;
-}
-
 function getFirstSymbolLayerId(map) {
   const layers = map.getStyle().layers || [];
   const symbolLayer = layers.find((layer) => layer.type === "symbol" && layer.layout && layer.layout["text-field"]);
@@ -112,101 +96,51 @@ function initSipdaMap() {
       id: "sipda-heatmap",
       type: "heatmap",
       source: "sipda-incidents",
-      maxzoom: 17,
+      maxzoom: 18,
       paint: {
         "heatmap-weight": [
           "interpolate",
           ["linear"],
           ["get", "intensity"],
           0, 0,
-          10, 1.35
+          10, 1.45
         ],
         "heatmap-intensity": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 1.15,
-          14, 2.35,
-          16, 3.1
+          10, 1.25,
+          14, 2.55,
+          16, 3.25
         ],
         "heatmap-radius": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 38,
-          14, 74,
-          16, 96
+          10, 42,
+          14, 82,
+          16, 112
         ],
         "heatmap-opacity": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10, 0.72,
-          14, 0.82,
-          16, 0.66
+          10, 0.74,
+          14, 0.84,
+          16, 0.72
         ],
         "heatmap-color": [
           "interpolate",
           ["linear"],
           ["heatmap-density"],
           0, "rgba(0,84,166,0)",
-          0.12, "rgba(0,84,166,0.20)",
-          0.32, "rgba(22,163,74,0.32)",
-          0.55, "rgba(245,158,11,0.45)",
-          0.78, "rgba(239,68,68,0.58)",
-          1, "rgba(239,68,68,0.72)"
+          0.12, "rgba(0,84,166,0.22)",
+          0.32, "rgba(22,163,74,0.34)",
+          0.55, "rgba(245,158,11,0.48)",
+          0.78, "rgba(239,68,68,0.62)",
+          1, "rgba(239,68,68,0.78)"
         ]
       }
-    });
-
-    map.addLayer({
-      id: "sipda-points",
-      type: "circle",
-      source: "sipda-incidents",
-      minzoom: 12.6,
-      paint: {
-        "circle-radius": [
-          "interpolate",
-          ["linear"],
-          ["get", "intensity"],
-          1, 5,
-          10, 13
-        ],
-        "circle-color": [
-          "match",
-          ["get", "risk"],
-          "high", "#ef4444",
-          "medium", "#f59e0b",
-          "low", "#16a34a",
-          "#0054A6"
-        ],
-        "circle-stroke-color": "rgba(255,255,255,0.42)",
-        "circle-stroke-width": 1,
-        "circle-opacity": 0.18,
-        "circle-blur": 0.6
-      }
-    });
-
-    map.on("click", "sipda-points", (event) => {
-      const feature = event.features && event.features[0];
-      if (!feature) return;
-
-      new mapboxgl.Popup({
-        closeButton: true,
-        closeOnClick: true,
-        offset: 16
-      })
-        .setLngLat(feature.geometry.coordinates)
-        .setHTML(buildPopupHTML(feature.properties || {}))
-        .addTo(map);
-    });
-
-    map.on("mouseenter", "sipda-points", () => {
-      map.getCanvas().style.cursor = "pointer";
-    });
-
-    map.on("mouseleave", "sipda-points", () => {
-      map.getCanvas().style.cursor = "";
     });
   });
 
