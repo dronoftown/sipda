@@ -1,3 +1,12 @@
+function loadSipdaRuntimeGuards() {
+  if (document.getElementById("sipda-pl-guard-loader")) return;
+  const script = document.createElement("script");
+  script.id = "sipda-pl-guard-loader";
+  script.src = "./assets/js/sipda-pl-guard.js?v=20";
+  script.defer = true;
+  document.body.appendChild(script);
+}
+
 function getSectionFromHash(hash) {
   if (!hash || hash === "#") return "#top";
   return hash;
@@ -21,6 +30,8 @@ function scrollToSection(hash) {
 }
 
 function bindSipdaNavigation() {
+  loadSipdaRuntimeGuards();
+
   document.querySelectorAll(".top-nav a, .mobile-nav a, .product-brand").forEach((link) => {
     link.addEventListener("click", (event) => {
       const href = link.getAttribute("href");
