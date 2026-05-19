@@ -1,8 +1,8 @@
 const SIPDA_MAP_CONFIG = {
-  center: [3.067, 41.817],
-  zoom: 13.25,
-  pitch: 48,
-  bearing: -12
+  center: [3.0674, 41.8171],
+  zoom: 13.45,
+  pitch: 64,
+  bearing: -18
 };
 
 function showMapTokenNotice(message) {
@@ -31,6 +31,45 @@ function buildPopupHTML(properties) {
   `;
 }
 
+function getFirstSymbolLayerId(map) {
+  const layers = map.getStyle().layers || [];
+  const symbolLayer = layers.find((layer) => layer.type === "symbol" && layer.layout && layer.layout["text-field"]);
+  return symbolLayer ? symbolLayer.id : undefined;
+}
+
+function addTerrain3D(map) {
+  if (!map.getSource("mapbox-dem")) {
+    map.addSource("mapbox-dem", {
+      type: "raster-dem",
+      url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+      tileSize: 512,
+      maxzoom: 14
+    });
+  }
+
+  map.setTerrain({ source: "mapbox-dem", exaggeration: 1.35 });
+
+  if (!map.getLayer("sipda-3d-buildings")) {
+    map.addLayer(
+      {
+        id: "sipda-3d-buildings",
+        source: "composite",
+        "source-layer": "building",
+        filter: ["==", "extrude", "true"],
+        type: "fill-extrusion",
+        minzoom: 14,
+        paint: {
+          "fill-extrusion-color": "rgba(255,255,255,0.72)",
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "min_height"],
+          "fill-extrusion-opacity": 0.62
+        }
+      },
+      getFirstSymbolLayerId(map)
+    );
+  }
+}
+
 function initSipdaMap() {
   if (!window.mapboxgl) {
     showMapTokenNotice("No se ha podido cargar Mapbox GL JS.");
@@ -48,18 +87,12 @@ function initSipdaMap() {
 
   const map = new mapboxgl.Map({
     container: "sipdaMap",
-    style: "mapbox://styles/mapbox/standard",
+    style: "mapbox://styles/mapbox/satellite-streets-v12",
     center: SIPDA_MAP_CONFIG.center,
     zoom: SIPDA_MAP_CONFIG.zoom,
     pitch: SIPDA_MAP_CONFIG.pitch,
     bearing: SIPDA_MAP_CONFIG.bearing,
-    antialias: true,
-    config: {
-      basemap: {
-        theme: "monochrome",
-        lightPreset: "day"
-      }
-    }
+    antialias: true
   });
 
   map.addControl(
@@ -68,6 +101,8 @@ function initSipdaMap() {
   );
 
   map.on("load", () => {
+    addTerrain3D(map);
+
     map.addSource("sipda-incidents", {
       type: "geojson",
       data: "./data/incidents.geojson"
@@ -90,26 +125,33 @@ function initSipdaMap() {
           "interpolate",
           ["linear"],
           ["zoom"],
-          11, 0.75,
-          15, 2.55
+          10, 0.55,
+          15, 1.75
         ],
         "heatmap-radius": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          11, 18,
-          15, 46
+          10, 22,
+          15, 52
         ],
-        "heatmap-opacity": 0.74,
+        "heatmap-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10, 0.46,
+          15, 0.68
+        ],
         "heatmap-color": [
           "interpolate",
           ["linear"],
           ["heatmap-density"],
           0, "rgba(0,84,166,0)",
-          0.25, "rgba(0,84,166,.34)",
-          0.5, "rgba(22,163,74,.44)",
-          0.75, "rgba(245,158,11,.62)",
-          1, "rgba(239,68,68,.82)"
+          0.2, "rgba(0,84,166,0.12)",
+          0.4, "rgba(22,163,74,0.18)",
+          0.6, "rgba(245,158,11,0.25)",
+          0.8, "rgba(239,68,68,0.32)",
+          1, "rgba(239,68,68,0.42)"
         ]
       }
     });
@@ -118,14 +160,14 @@ function initSipdaMap() {
       id: "sipda-points",
       type: "circle",
       source: "sipda-incidents",
-      minzoom: 13,
+      minzoom: 14.2,
       paint: {
         "circle-radius": [
           "interpolate",
           ["linear"],
           ["get", "intensity"],
-          1, 5,
-          10, 13
+          1, 3,
+          10, 8
         ],
         "circle-color": [
           "match",
@@ -135,9 +177,10 @@ function initSipdaMap() {
           "low", "#16a34a",
           "#0054A6"
         ],
-        "circle-stroke-color": "#ffffff",
-        "circle-stroke-width": 2,
-        "circle-opacity": 0.94
+        "circle-stroke-color": "rgba(255,255,255,0.38)",
+        "circle-stroke-width": 1,
+        "circle-opacity": 0.24,
+        "circle-blur": 0.45
       }
     });
 
@@ -162,6 +205,14 @@ function initSipdaMap() {
     map.on("mouseleave", "sipda-points", () => {
       map.getCanvas().style.cursor = "";
     });
+  });
+
+  map.on("style.load", () => {
+    try {
+      addTerrain3D(map);
+    } catch (error) {
+      console.warn("SIPDA 3D terrain warning", error);
+    }
   });
 
   map.on("error", (event) => {
