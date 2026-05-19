@@ -31,15 +31,18 @@ function setImportStep(step, state) {
 
 function resetImportModal() {
   pendingSipdaDataset = null;
+  window.SIPDA_PENDING_DATASET = null;
   pendingSipdaFileName = "";
   setImportProgress(0);
   setImportStatus("Selecciona un PDF de novetats per iniciar l'anàlisi.", "info");
   ["upload", "read", "analyze", "ready"].forEach((step) => setImportStep(step, "pending"));
   const summary = document.getElementById("importModalSummary");
   const updateButton = document.getElementById("importUpdatePanel");
+  const addHistoryButton = document.getElementById("importAddHistory");
   const input = document.getElementById("modalPdfInput");
   if (summary) summary.innerHTML = "";
   if (updateButton) updateButton.disabled = true;
+  if (addHistoryButton) addHistoryButton.disabled = true;
   if (input) input.value = "";
 }
 
@@ -420,6 +423,7 @@ async function handleV6Import(event) {
 
   try {
     pendingSipdaDataset = null;
+    window.SIPDA_PENDING_DATASET = null;
     pendingSipdaFileName = file.name;
     setImportStep("upload", "done");
     setImportStep("read", "active");
@@ -449,12 +453,15 @@ async function handleV6Import(event) {
 
     const dataset = buildIntelligenceDataset(parsed, file.name, text);
     pendingSipdaDataset = dataset;
+    window.SIPDA_PENDING_DATASET = dataset;
     setImportStep("analyze", "done");
     setImportStep("ready", "done");
     setImportProgress(100);
     renderPendingSummary(dataset);
     const updateButton = document.getElementById("importUpdatePanel");
+    const addHistoryButton = document.getElementById("importAddHistory");
     if (updateButton) updateButton.disabled = false;
+    if (addHistoryButton) addHistoryButton.disabled = false;
     setImportStatus(`Anàlisi completada: ${dataset.summary.totalServices} serveis · ${dataset.summary.relevantServices} rellevants.`, "success");
   } catch (error) {
     console.error("SIPDA v6 import error", error);
@@ -466,12 +473,13 @@ async function handleV6Import(event) {
 }
 
 function applyPendingDataset() {
-  if (!pendingSipdaDataset) {
+  const dataset = window.SIPDA_PENDING_DATASET || pendingSipdaDataset;
+  if (!dataset) {
     setImportStatus("Encara no hi ha cap anàlisi preparat per actualitzar el panell.", "warning");
     return;
   }
-  window.SIPDA_OPERATIONAL_DATA = pendingSipdaDataset;
-  window.dispatchEvent(new CustomEvent("sipda:data-updated", { detail: pendingSipdaDataset }));
+  window.SIPDA_OPERATIONAL_DATA = dataset;
+  window.dispatchEvent(new CustomEvent("sipda:data-updated", { detail: dataset }));
   setImportStatus(`Panell actualitzat amb ${pendingSipdaFileName}.`, "success");
   setTimeout(closeImportModal, 320);
 }
