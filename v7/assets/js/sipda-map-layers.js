@@ -1,155 +1,21 @@
-/* SIPDA v7 · mapa interactivo estable + capas de calor/prioridad
-   Corrige el auto-centrado: solo ajusta bounds cuando cambian los datos, nunca al hacer zoom/pan. */
 (function(){
-  let uiReady=false;
-  let interactionLocked=false;
-  let lastSignature='';
-  const state={heat:true,high:true,medium:true,low:true,pl:true,me:true};
-  function D(){try{return typeof DATA!=='undefined'?DATA:{services:[]}}catch(e){return{services:[]}}}
-  function M(){try{return typeof MAP!=='undefined'?MAP:null}catch(e){return null}}
-  function LG(){try{return typeof LAYER!=='undefined'?LAYER:null}catch(e){return null}}
-  function E(v){return typeof esc==='function'?esc(v):String(v||'')}
-  function sChipLocal(t){if(typeof sChip==='function')return sChip(t);let c=t==='PL'?'pl':t==='MOSSOS'?'me':'other',l=t==='PL'?'PL':t==='MOSSOS'?'ME':'--';return `<b class="source-chip ${c}">${l}</b>`}
-  function pBadgeLocal(p){if(typeof pBadge==='function')return pBadge(p);let l=p==='high'?'Alta':p==='medium'?'Mitjana':'Baixa';return `<em class="priority-badge ${p}">${l}</em>`}
-  function pLabel(p){return p==='high'?'Alta':p==='medium'?'Mitjana':'Baixa'}
-  function services(){return Array.isArray(D().services)?D().services:[]}
-  function signature(){return services().map(x=>[x.id,x.coordinates&&x.coordinates.join(','),x.priority,x.sourceType].join('|')).join('¬')}
-  function shouldShow(x){
-    if(x.priority==='high'&&!state.high)return false;
-    if(x.priority==='medium'&&!state.medium)return false;
-    if((!x.priority||x.priority==='low')&&!state.low)return false;
-    if(x.sourceType==='PL'&&!state.pl)return false;
-    if(x.sourceType==='MOSSOS'&&!state.me)return false;
-    return true;
-  }
-  function ensureUI(){
-    if(uiReady)return;
-    const panel=document.querySelector('.map-panel');
-    if(!panel)return;
-    if(!document.getElementById('mapLayerControls')){
-      const div=document.createElement('div');
-      div.id='mapLayerControls';
-      div.className='map-layer-controls';
-      div.innerHTML=`
-        <button class="map-layer-btn is-active" type="button" data-layer="heat"><i></i>Calor</button>
-        <button class="map-layer-btn is-active" type="button" data-layer="high"><i></i>Alta</button>
-        <button class="map-layer-btn is-active" type="button" data-layer="medium"><i></i>Mitjana</button>
-        <button class="map-layer-btn is-active" type="button" data-layer="low"><i></i>Baixa</button>
-        <button class="map-layer-btn is-active" type="button" data-layer="pl"><i></i>PL</button>
-        <button class="map-layer-btn is-active" type="button" data-layer="me"><i></i>ME</button>`;
-      panel.appendChild(div);
-      div.addEventListener('click',e=>{
-        const b=e.target.closest('[data-layer]');
-        if(!b)return;
-        const key=b.dataset.layer;
-        state[key]=!state[key];
-        b.classList.toggle('is-active',state[key]);
-        interactionLocked=true;
-        drawMap(false);
-      });
-    }
-    if(!document.getElementById('mapUpdatePill')){
-      const pill=document.createElement('div');
-      pill.id='mapUpdatePill';
-      pill.className='map-update-pill';
-      pill.innerHTML='<i></i><span>Mapa interactiu</span>';
-      panel.appendChild(pill);
-    }
-    if(!document.getElementById('mapPointDetail')){
-      const card=document.createElement('aside');
-      card.id='mapPointDetail';
-      card.className='map-point-detail';
-      card.hidden=true;
-      panel.appendChild(card);
-    }
-    uiReady=true;
-  }
-  function bindInteraction(){
-    const map=M();
-    if(!map||map.__sipdaInteractionBound)return;
-    map.__sipdaInteractionBound=true;
-    map.on('zoomstart movestart dragstart',()=>{interactionLocked=true;});
-  }
-  function heatLayer(x){
-    if(!state.heat||!window.L||!x.coordinates||x.priority==='low')return null;
-    return L.marker(x.coordinates,{interactive:false,zIndexOffset:-500,icon:L.divIcon({className:'',html:`<div class="sipda-heat-dot ${x.priority}"></div>`,iconSize:[70,70],iconAnchor:[0,0]})});
-  }
-  function pointCard(x){
-    const card=document.getElementById('mapPointDetail');
-    if(!card)return;
-    const priority=x.priority||'low';
-    const lat=Array.isArray(x.coordinates)?Number(x.coordinates[0]).toFixed(5):'--';
-    const lng=Array.isArray(x.coordinates)?Number(x.coordinates[1]).toFixed(5):'--';
-    card.innerHTML=`
-      <div class="map-point-head">
-        <div class="map-point-head-main">
-          <div class="map-point-meta">${sChipLocal(x.sourceType)} ${pBadgeLocal(priority)} <span class="map-point-priority-dot ${priority}"></span></div>
-          <div class="map-point-title">${E(x.title||'Servei operatiu')}</div>
-        </div>
-        <button class="map-point-close" type="button" aria-label="Tancar informació"><i data-lucide="x"></i></button>
-      </div>
-      <div class="map-point-body">
-        <div class="map-point-kpis">
-          <span>Hora<b>${E(x.time||'--:--')}</b></span>
-          <span>Prioritat<b>${pLabel(priority)}</b></span>
-          <span>Origen<b>${E(x.sourceLabel||x.sourceType||'--')}</b></span>
-        </div>
-        <div class="map-point-section"><small>Zona / ubicació</small><strong>${E(x.zone||'Zona operativa')}</strong></div>
-        <div class="map-point-section"><small>Categoria</small><p>${E(x.category||'Sense categoria')}</p></div>
-        <div class="map-point-section"><small>Resum del servei</small><p>${E(x.summary||'Sense resum disponible.')}</p></div>
-        <div class="map-point-section"><small>Coordenada estimada</small><p>${lat}, ${lng}</p></div>
-        <div class="map-point-actions"><button type="button" class="focus" data-map-focus>Centra punt</button><button type="button" data-map-close>Tancar</button></div>
-      </div>`;
-    card.hidden=false;
-    card.querySelector('[data-map-close]')?.addEventListener('click',()=>{card.hidden=true;});
-    card.querySelector('.map-point-close')?.addEventListener('click',()=>{card.hidden=true;});
-    card.querySelector('[data-map-focus]')?.addEventListener('click',()=>{
-      const map=M();
-      if(map&&x.coordinates){interactionLocked=true;map.setView(x.coordinates,Math.max(map.getZoom(),16),{animate:true});}
-    });
-    if(window.lucide)window.lucide.createIcons();
-  }
-  function markerLayer(x){
-    if(!window.L||!x.coordinates)return null;
-    const cls=x.sourceType==='PL'?'pl':x.sourceType==='MOSSOS'?'me':'other';
-    const lab=x.sourceType==='PL'?'PL':x.sourceType==='MOSSOS'?'ME':'--';
-    const priority=x.priority||'low';
-    const ic=L.divIcon({className:'',html:`<div class="sipda-marker ${cls} ${priority}"><span class="mk-source">${lab}</span><span class="mk-priority"></span></div>`,iconSize:[34,34],iconAnchor:[17,17]});
-    const popup=`<div class="map-popup"><div class="map-priority-title">${sChipLocal(x.sourceType)} ${pBadgeLocal(priority)}</div><div class="map-popup-body"><strong>${E(x.title)}</strong><span class="map-popup-zone">${E(x.zone)}</span><br>${E(x.summary)}</div></div>`;
-    const marker=L.marker(x.coordinates,{icon:ic,riseOnHover:true}).bindPopup(popup,{maxWidth:310});
-    marker.on('click',()=>{interactionLocked=true;pointCard(x);});
-    return marker;
-  }
-  window.drawMap=function(autoFit){
-    ensureUI();
-    bindInteraction();
-    const map=M(), layer=LG();
-    if(!map||!layer)return;
-    const sig=signature();
-    const dataChanged=sig!==lastSignature;
-    lastSignature=sig;
-    layer.clearLayers();
-    const bounds=[];
-    services().forEach(x=>{
-      if(!shouldShow(x))return;
-      const heat=heatLayer(x); if(heat)heat.addTo(layer);
-      const mk=markerLayer(x); if(mk)mk.addTo(layer);
-      if(x.coordinates)bounds.push(x.coordinates);
-    });
-    const canAutofit = bounds.length && dataChanged && !interactionLocked && autoFit!==false;
-    if(canAutofit) map.fitBounds(bounds,{padding:[38,38],maxZoom:15,animate:false});
-    const pill=document.getElementById('mapUpdatePill');
-    if(pill) pill.querySelector('span').textContent = `${bounds.length} punts · clic per veure informació`;
-  };
-  const oldRender=window.render;
-  if(typeof oldRender==='function'){
-    window.render=function(){
-      oldRender.apply(this,arguments);
-      setTimeout(()=>drawMap(true),0);
-    };
-  }
-  document.addEventListener('DOMContentLoaded',()=>{
-    setTimeout(()=>{ensureUI();bindInteraction();drawMap(true);},650);
-    setTimeout(()=>{ensureUI();bindInteraction();drawMap(true);},1600);
-  });
+  function addCss(){if(document.getElementById('sipdaIntelCss'))return;var s=document.createElement('style');s.id='sipdaIntelCss';s.textContent='.sipda-intel-matrix-grid{grid-template-columns:1fr!important}.intel-table-wrap{overflow:auto;border:1px solid #e5e7eb;background:#fff}.intel-table{width:100%;border-collapse:collapse;min-width:720px}.intel-table th{padding:10px 12px;background:#f8fafc;color:#6b7280;text-align:left;text-transform:uppercase;letter-spacing:.06em;font-size:10px;font-weight:950}.intel-table td{padding:12px;border-top:1px solid #eef0f3;vertical-align:top;font-size:12px;font-weight:750}.intel-table td small{display:block;margin-top:4px;color:#6b7280;font-size:10px;font-weight:850}.intel-pill{display:inline-flex;height:24px;align-items:center;padding:0 8px;border:1px solid #e5e7eb;background:#f8fafc;font-size:10px;font-weight:950;text-transform:uppercase;font-style:normal}.intel-pill.high{background:#fff1f1;border-color:#fecaca;color:#991b1b}.intel-pill.medium{background:#fffbeb;border-color:#fde68a;color:#92400e}.intel-pill.low{background:#f0fdf4;border-color:#bbf7d0;color:#166534}.intel-note{color:#6b7280;font-size:11px;font-weight:850;line-height:1.4}.intel-zone-bar{width:10px;height:34px;flex:0 0 auto;background:#111}.intel-zone-bar.high{background:#dc2626}.intel-zone-bar.medium{background:#f59e0b}.intel-zone-bar.low{background:#16a34a}.sipda-matrix-card{border-left-color:#0054A6!important}.sipda-matrix-card .prediction-card-head p{margin-top:4px;color:#6b7280;font-size:12px;line-height:1.35;font-weight:750}@media(max-width:680px){.intel-table{min-width:680px}}';document.head.appendChild(s);}
+  function d(){try{return typeof DATA!=='undefined'?DATA:(window.DATA||{});}catch(e){return window.DATA||{};}}
+  function list(){var x=d().services;return Array.isArray(x)?x:[];}
+  function e(v){return String(v||'').replace(/[&<>'"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c];});}
+  function n(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();}
+  function band(t){var m=String(t||'').match(/(\d{1,2})/);if(!m)return 'No determinada';var h=+m[1];if(h>=6&&h<14)return 'Matí';if(h>=14&&h<20)return 'Tarda';if(h>=20)return 'Vespre';return 'Nit / matinada';}
+  function topic(s){var x=n([s.title,s.category,s.summary,s.zone].join(' '));if(/vmp|transit|circulacio|vehicle|estacion|gual|accident/.test(x))return 'Trànsit / VMP';if(/alarma|cra/.test(x))return 'Alarmes';if(/habitatge|domicili|urbanitzacio|urbanitzacions|control de pas|mas sais/.test(x))return 'Habitatges / urbanitzacions';if(/baralla|molest|conviv|discussio|seguretat ciutadana|inseguretat/.test(x))return 'Convivència';if(/assistencial|sanitari|ambulancia|menor|persona gran/.test(x))return 'Assistencial';if(/via publica|inund|aigua|arbre|fanal|senyal/.test(x))return 'Via pública';return s.category||'Altres';}
+  function add(m,k){k=String(k||'No determinat').trim()||'No determinat';m[k]=(m[k]||0)+1;}
+  function top(o){var a=Object.keys(o).map(function(k){return {k:k,v:o[k]};}).sort(function(a,b){return b.v-a.v||a.k.localeCompare(b.k);});return a[0]||{k:'No determinat',v:0};}
+  function cls(v){v=n(v);if(v.indexOf('alta')>=0||v.indexOf('alt')>=0)return 'high';if(v.indexOf('mitj')>=0)return 'medium';return 'low';}
+  function act(r){var x=n(r);if(x.indexOf('transit')>=0||x.indexOf('vmp')>=0)return 'Control visible';if(x.indexOf('alarma')>=0)return 'Resposta ordinària';if(x.indexOf('habitat')>=0)return 'Patrullatge preventiu';if(x.indexOf('conviv')>=0)return 'Presència preventiva';if(x.indexOf('assist')>=0)return 'Resposta assistencial';return 'Seguiment operatiu';}
+  function rows(){var sv=list(),g={};sv.forEach(function(s){var r=topic(s);if(!g[r])g[r]={name:r,count:0,z:{},b:{},score:0};g[r].count++;add(g[r].z,s.zone);add(g[r].b,band(s.time));g[r].score+=(s.priority==='high'?9:s.priority==='medium'?6:3);});return Object.keys(g).map(function(k){var x=g[k],z=top(x.z),b=top(x.b),p=x.count>=4?'Alta':x.count>=2?'Mitjana':'Baixa',im=/Habitatges|Convivència/.test(k)?'Alt':/Alarmes/.test(k)?'Baix':'Mitjà';return {risk:k,zone:z.k,franja:b.k,prob:p,impact:im,count:x.count,score:x.score,action:act(k)};}).sort(function(a,b){return b.score-a.score;}).slice(0,6);}
+  function zones(){var sv=list(),g={};sv.forEach(function(s){var z=s.zone||'No determinada';if(!g[z])g[z]={z:z,c:0,r:{},b:{},score:0};g[z].c++;add(g[z].r,topic(s));add(g[z].b,band(s.time));g[z].score+=(s.priority==='high'?9:s.priority==='medium'?6:3);});return Object.keys(g).map(function(k){var x=g[k],r=top(x.r),b=top(x.b),lvl=x.c>=3?'Alta':x.c>=2?'Mitjana':'Baixa';return {zone:k,count:x.c,risk:r.k,band:b.k,level:lvl,score:x.score};}).sort(function(a,b){return b.score-a.score;}).slice(0,8);}
+  function renderAI(rs){var box=document.getElementById('aiFeed');if(!box)return;var total=list().length,main=rs[0];box.innerHTML='<div class="feed-item"><i class="feed-signal '+(main?cls(main.prob):'low')+'"></i><div><strong>Lectura executiva</strong><span>'+(total?e('SIPDA ha llegit '+total+' novetats PL/ME. Escenari principal: '+main.risk+' a '+main.zone+' en franja '+main.franja+'.'):'Encara no hi ha novetats carregades.')+'</span></div></div><div class="feed-item"><i class="feed-signal neutral"></i><div><strong>Patró principal</strong><span>'+(main?e(main.risk+' · '+main.zone+' · '+main.franja+' · '+main.count+' servei(s).'):'No es detecta patró dominant amb base suficient.')+'</span></div></div><div class="feed-item"><i class="feed-signal medium"></i><div><strong>Recomanació operativa</strong><span>'+(main?e(main.action+' a '+main.zone+' durant '+main.franja+'.'):'Afegir informes per generar recomanació.')+'</span></div></div><div class="intel-note">Base: lectura local de novetats documentades PL/ME.</div>';}
+  function renderMatrix(rs){var grid=document.getElementById('sourcePredictionGrid');if(!grid)return;grid.classList.add('sipda-intel-matrix-grid');if(!rs.length){grid.innerHTML='<article class="prediction-card"><div class="prediction-card-head"><div><b class="source-chip other">48H</b><h3>Matriu operativa 48 h</h3></div><em class="priority-badge low">pendent</em></div><p>Carrega informes PL/ME per activar la lectura.</p></article>';return;}var body=rs.map(function(r){return '<tr><td><strong>'+e(r.risk)+'</strong><small>'+r.count+' servei(s)</small></td><td>'+e(r.zone)+'</td><td>'+e(r.franja)+'</td><td><em class="intel-pill '+cls(r.prob)+'">'+e(r.prob)+'</em></td><td><em class="intel-pill">'+e(r.impact)+'</em></td><td>'+e(r.action)+'</td></tr>';}).join('');grid.innerHTML='<article class="prediction-card sipda-matrix-card"><div class="prediction-card-head"><div><b class="source-chip other">48H</b><h3>Matriu operativa 48 h</h3><p>Risc, zona, franja, probabilitat, impacte i acció.</p></div><em class="priority-badge '+cls(rs[0].prob)+'">'+e(rs[0].prob)+'</em></div><div class="intel-table-wrap"><table class="intel-table"><thead><tr><th>Risc</th><th>Zona</th><th>Franja</th><th>Probabilitat</th><th>Impacte</th><th>Acció</th></tr></thead><tbody>'+body+'</tbody></table></div><small class="intel-note">Generat només amb serveis llegits dels PDF carregats.</small></article>';}
+  function renderZones(zs){var box=document.getElementById('hotZones');if(!box)return;if(!zs.length){box.innerHTML='<div class="empty-state">Encara no hi ha zones calentes.</div>';return;}box.innerHTML=zs.map(function(z){return '<div class="zone-row"><div class="zone-main"><div class="intel-zone-bar '+cls(z.level)+'"></div><div><strong>'+e(z.zone)+'</strong><small>'+e(z.risk)+' · '+e(z.band)+' · '+z.count+' servei(s)</small></div></div><em class="intel-pill '+cls(z.level)+'">'+e(z.level)+'</em></div>';}).join('');}
+  function paint(){addCss();var rs=rows();renderAI(rs);renderMatrix(rs);renderZones(zones());try{if(typeof window.drawMap==='function')window.drawMap();}catch(err){}}
+  var old=typeof render==='function'?render:window.render;function wrap(){if(old)old.apply(this,arguments);paint();}
+  try{render=wrap;}catch(e){}window.render=wrap;document.addEventListener('DOMContentLoaded',function(){setTimeout(paint,700);setTimeout(paint,1700);});
 })();
