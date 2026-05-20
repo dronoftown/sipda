@@ -1,0 +1,9 @@
+/* SIPDA v7 · fix visibilidad Intel·ligència SIPDA */
+.prediction-block.sipda-intel-visible{display:grid!important;gap:12px!important;margin-top:12px!important}
+.sipda-intel-visible .sipda-intel-main-grid{display:grid!important;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr)!important;gap:12px!important}
+.app-shell .sipda-intel-visible .right-column.sipda-intel-side{display:grid!important;gap:12px!important;align-content:start!important}
+.app-shell .sipda-intel-visible .map-column.sipda-intel-matrix-column{display:block!important;min-width:0!important}
+.sipda-intel-visible #sourcePredictionGrid{display:grid!important}
+.sipda-intel-visible #aiFeed{display:grid!important}
+.sipda-intel-visible #hotZones{display:grid!important}
+@media(max-width:1180px){.sipda-intel-visible .sipda-intel-main-grid{grid-template-columns:1fr!important}.app-shell .sipda-intel-visible .right-column.sipda-intel-side{display:grid!important}}
