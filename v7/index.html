@@ -18,6 +18,7 @@
     document.write('<link rel="stylesheet" href="./assets/css/sipda-police-refine.css?v=' + window.SIPDA_BUILD + '">');
     document.write('<link rel="stylesheet" href="./assets/css/sipda-period-popover.css?v=' + window.SIPDA_BUILD + '">');
     document.write('<link rel="stylesheet" href="./assets/css/sipda-map-layers.css?v=' + window.SIPDA_BUILD + '">');
+    document.write('<link rel="stylesheet" href="./assets/css/sipda-v7-intel-card.css?v=' + window.SIPDA_BUILD + '">');
   </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -46,7 +47,6 @@
         <a href="#prediccio"><i data-lucide="radar"></i><span>Predicció</span></a>
         <a href="#zones"><i data-lucide="shield-alert"></i><span>Zones</span></a>
         <a href="#timeline"><i data-lucide="list-tree"></i><span>Timeline</span></a>
-        <a href="#docs"><i data-lucide="file-text"></i><span>Informes</span></a>
       </nav>
       <div class="unit-panel"><span>Municipi</span><strong>Castell d'Aro · Platja d'Aro · S'Agaró</strong><small>Lectura acumulada PL + ME</small></div>
     </aside>
@@ -87,14 +87,11 @@
           <section id="prediccio" class="prediction-block"><div class="section-title"><span>Predicció operativa 48 h</span><h2>Lectura intel·ligent dels PDF</h2></div><div id="sourcePredictionGrid" class="prediction-source-grid"></div></section>
         </div>
         <aside class="right-column">
-          <article id="ia" class="panel ai-panel"><div class="panel-head compact"><div><h2>Intel·ligència SIPDA</h2><p>Lectura executiva generada sobre dades agregades.</p></div><span class="status-pill">SIPDA IA</span></div><div id="aiFeed" class="ai-feed"></div></article>
-          <article id="zones" class="panel hotzones-panel"><div class="panel-head compact"><div><h2>Zones calentes</h2><p>Dades operatives reals agrupades per zona, origen i prioritat.</p></div></div><div id="hotZones" class="zone-list"></div></article>
+          <article id="ia" class="panel ai-panel"><div class="panel-head compact"><div><h2>Intel·ligència SIPDA</h2><p>Lectura executiva, patró principal i recomanació sobre novetats PL/ME.</p></div><span class="status-pill">SIPDA IA</span></div><div id="aiFeed" class="ai-feed"></div></article>
+          <article id="zones" class="panel hotzones-panel"><div class="panel-head compact"><div><h2>Zones calentes</h2><p>Dades operatives reals agrupades per zona, risc i franja.</p></div></div><div id="hotZones" class="zone-list"></div></article>
         </aside>
       </section>
 
-      <section class="bottom-grid">
-        <article id="docs" class="panel docs-panel"><div class="panel-head compact"><div><h2>Entrada documental</h2><p>Importació local de PDF. El fitxer no puja a servidor.</p></div></div><button id="openImportAlt" class="upload-tile" type="button"><i data-lucide="file-up"></i><span>Pujar informe PDF</span></button><p id="historyStatus" class="status-text">Històric local v7 pendent de dades.</p></article>
-      </section>
       <div id="timeline" hidden aria-hidden="true"><div id="timelineRows" class="timeline-list"></div></div>
     </main>
   </div>
@@ -120,7 +117,7 @@
     </div>
   </section>
 
-  <nav class="mobile-nav" aria-label="Navegació mòbil"><a class="active" href="#situacio"><i data-lucide="scan-line"></i><span>Inici</span></a><a href="#mapa"><i data-lucide="map"></i><span>Mapa</span></a><a href="#prediccio"><i data-lucide="radar"></i><span>48 h</span></a><a href="#zones"><i data-lucide="shield-alert"></i><span>Zones</span></a><a href="#docs"><i data-lucide="file-text"></i><span>Docs</span></a></nav>
+  <nav class="mobile-nav" aria-label="Navegació mòbil"><a class="active" href="#situacio"><i data-lucide="scan-line"></i><span>Inici</span></a><a href="#mapa"><i data-lucide="map"></i><span>Mapa</span></a><a href="#prediccio"><i data-lucide="radar"></i><span>48 h</span></a><a href="#zones"><i data-lucide="shield-alert"></i><span>Zones</span></a></nav>
 
   <script>
     document.write('<script src="../v5/assets/js/sipda-auth.js?v=' + window.SIPDA_BUILD + '"><\/script>');
@@ -136,6 +133,7 @@
     document.write('<script src="./assets/js/sipda-v7-forecast-48h.js?v=' + window.SIPDA_BUILD + '"><\/script>');
     document.write('<script src="./assets/js/sipda-period-popover.js?v=' + window.SIPDA_BUILD + '"><\/script>');
     document.write('<script src="./assets/js/sipda-map-layers.js?v=' + window.SIPDA_BUILD + '"><\/script>');
+    document.write('<script src="./assets/js/sipda-v7-intel-card.js?v=' + window.SIPDA_BUILD + '"><\/script>');
   </script>
 </body>
 </html>
