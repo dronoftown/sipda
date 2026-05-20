@@ -15,14 +15,14 @@
     if(['medium','mitjana','media','moderada','moderat'].includes(v))return 'medium';
     return 'low';
   }
-  function riskLabel(level){return level==='critical'?'crítica':level==='high'?'alta':level==='medium'?'mitjana':'baixa'}
+  function riskLabel(level){return level==='critical'?'CRÍTICA':level==='high'?'ALTA':level==='medium'?'MITJANA':'BAIXA'}
   function riskPercent(value,fallback){const n=Number(value);if(Number.isFinite(n))return Math.max(0,Math.min(100,Math.round(n)))+'%';return fallback}
   function ensureMeteoCard(){
     const row=document.querySelector('.sipda-overview-bottom');
     if(!row)return;
     const old=row.querySelector('.mini-kpi-card:nth-child(4)');
     if(!old||old.classList.contains('meteo-kpi-card'))return;
-    old.outerHTML=`<article id="meteoAlertCard" class="mini-kpi-card meteo-kpi-card" aria-label="Alertes meteorològiques 48 hores"><div class="meteo-compact-top"><div class="meteo-title"><small>Alertes meteorològiques · 48 h</small><span>Castell d'Aro · Platja d'Aro · S'Agaró</span></div><button id="meteoRefresh" class="meteo-refresh" type="button" aria-label="Actualitzar predicció"><i data-lucide="refresh-cw"></i></button><button id="meteoRiskBadge" class="meteo-prediction-btn low" type="button" aria-label="Predicció baixa">PREDICCIÓ</button></div><div class="meteo-compact-grid"><span class="meteo-factor"><i data-lucide="cloud-rain"></i><b>Pluja</b><small id="meteoRainRisk">0%</small></span><span class="meteo-factor"><i data-lucide="wind"></i><b>Vent</b><small id="meteoWindRisk">0%</small></span><span class="meteo-factor"><i data-lucide="waves"></i><b>Mar</b><small id="meteoSeaRisk">0%</small></span></div></article>`;
+    old.outerHTML=`<article id="meteoAlertCard" class="mini-kpi-card meteo-kpi-card" aria-label="Alertes meteorològiques 48 hores"><div class="meteo-compact-top"><div class="meteo-title"><small>Alertes meteorològiques · 48 h</small><span>Castell d'Aro · Platja d'Aro · S'Agaró</span></div><button id="meteoRefresh" class="meteo-refresh" type="button" aria-label="Actualitzar predicció"><i data-lucide="refresh-cw"></i></button><button id="meteoRiskBadge" class="meteo-prediction-btn low" type="button" aria-label="Predicció baixa">PREDICCIÓ BAIXA</button></div><div class="meteo-compact-grid"><span class="meteo-factor"><i data-lucide="cloud-rain"></i><b>Pluja</b><small id="meteoRainRisk">0%</small></span><span class="meteo-factor"><i data-lucide="wind"></i><b>Vent</b><small id="meteoWindRisk">0%</small></span><span class="meteo-factor"><i data-lucide="waves"></i><b>Mar</b><small id="meteoSeaRisk">0%</small></span></div><div class="meteo-source-line"><em>Meteocat</em><em>AEMET</em><em>Protecció Civil</em></div></article>`;
     document.getElementById('meteoRefresh')?.addEventListener('click',()=>updateMeteoCard());
     if(window.lucide)window.lucide.createIcons();
   }
@@ -35,7 +35,8 @@
     const source=window.SIPDA_METEO_48H||null;
     let level='low';
     if(source)level=normalizeRiskLevel(source.riskLevel||source.riskLabel||source.riskBadge);
-    if(badge){badge.textContent='PREDICCIÓ';badge.className='meteo-prediction-btn '+level;badge.setAttribute('aria-label','Predicció '+riskLabel(level))}
+    const label=riskLabel(level);
+    if(badge){badge.textContent='PREDICCIÓ '+label;badge.className='meteo-prediction-btn '+level;badge.setAttribute('aria-label','Predicció '+label.toLowerCase())}
     if(source){
       if(rain)rain.textContent=riskPercent(source.rainRisk??source.rainPct??source.plujaRisk,source.rain||'--%');
       if(wind)wind.textContent=riskPercent(source.windRisk??source.windPct??source.ventRisk,source.wind||'--%');
