@@ -31,7 +31,7 @@
     const plPel=document.getElementById('plPressureLabel'),mePel=document.getElementById('mePressureLabel');if(plPel)plPel.className='pressure-dot '+clsPressure(plP);if(mePel)mePel.className='pressure-dot '+clsPressure(meP);
     bar('plLoadBar',plLoad);bar('meLoadBar',meLoad);bar('plHighBar',plHighPct);bar('meHighBar',meHighPct);
     txt('riskHighPct',riskHigh+'%');txt('riskMediumPct',riskMedium+'%');txt('riskLowPct',riskLow+'%');bar('riskHighBar',riskHigh);bar('riskMediumBar',riskMedium);bar('riskLowBar',riskLow);
-    txt('overviewTotalServices',total);txt('overviewTotalIncidents',total+' incidències');txt('overviewHighCount',high);txt('overviewMediumCount',medium);txt('overviewLowCount',low);
+    txt('overviewTotalServices',total);txt('overviewTotalIncidents','PL '+pl.length+' · ME '+me.length);txt('overviewHighCount',high);txt('overviewMediumCount',medium);txt('overviewLowCount',low);
   }
   const old=window.render;if(typeof old==='function'){window.render=function(){old.apply(this,arguments);setTimeout(update,0)}}
   document.addEventListener('DOMContentLoaded',()=>{setTimeout(update,400);setTimeout(update,1200);setTimeout(update,2200)});
