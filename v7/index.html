@@ -19,6 +19,7 @@
     document.write('<link rel="stylesheet" href="./assets/css/sipda-period-popover.css?v=' + window.SIPDA_BUILD + '">');
     document.write('<link rel="stylesheet" href="./assets/css/sipda-map-layers.css?v=' + window.SIPDA_BUILD + '">');
     document.write('<link rel="stylesheet" href="./assets/css/sipda-v7-intel-card.css?v=' + window.SIPDA_BUILD + '">');
+    document.write('<link rel="stylesheet" href="./assets/css/sipda-overview-cards.css?v=' + window.SIPDA_BUILD + '">');
   </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -56,10 +57,7 @@
         <div><p>SIPDA / v7 / Command center municipal</p><h1>Centre d'intel·ligència operativa</h1></div>
         <div class="top-actions">
           <div class="sipda-command-tools" aria-label="Cerca i filtre">
-            <button id="commandSearch" class="sipda-command-search" type="button" aria-label="Cercar novetat, zona o informe">
-              <i data-lucide="search"></i>
-              <span>Cercar novetat, zona o informe</span>
-            </button>
+            <button id="commandSearch" class="sipda-command-search" type="button" aria-label="Cercar novetat, zona o informe"><i data-lucide="search"></i><span>Cercar novetat, zona o informe</span></button>
             <button id="periodFilter" class="sipda-period-pill" type="button"><i data-lucide="calendar-days"></i><span id="periodFilterLabel">Període</span></button>
           </div>
           <button id="openImport" class="btn black" type="button"><i data-lucide="upload-cloud"></i>Pujar informe</button>
@@ -68,54 +66,59 @@
         </div>
       </header>
 
-      <section class="kpi-grid" aria-label="Indicadors principals">
-        <article class="kpi-card"><span>Serveis acumulats</span><strong id="kpiTotal">0</strong><em id="kpiReports">0 informes</em></article>
-        <article class="kpi-card sem-high"><span>Prioritat alta</span><strong id="kpiHigh">0</strong><em>semàfor vermell</em></article>
-        <article class="kpi-card sem-medium"><span>Prioritat mitjana</span><strong id="kpiMedium">0</strong><em>semàfor ambre</em></article>
-        <article class="kpi-card sem-low"><span>Prioritat baixa</span><strong id="kpiLow">0</strong><em>semàfor verd</em></article>
-      </section>
-
-      <section class="main-grid">
-        <div class="map-column">
-          <article id="mapa" class="panel map-panel">
-            <div class="panel-head">
-              <div><h2>Mapa operatiu conjunt</h2><p>Un únic mapa amb punts diferenciats per cos i prioritat per semàfor.</p></div>
-              <div class="legend-strip"><span><b class="chip pl">PL</b>Policia Local</span><span><b class="chip me">ME</b>Mossos</span><span><i class="signal high"></i>Alta</span><span><i class="signal medium"></i>Mitjana</span><span><i class="signal low"></i>Baixa</span></div>
-            </div>
-            <div id="sipdaMap" class="map-canvas"></div>
+      <section class="sipda-overview" aria-label="Resumen operativo SIPDA">
+        <div class="sipda-overview-top">
+          <article class="overview-card municipality-card">
+            <div class="overview-card-head"><h3>ESTAT DEL MUNICIPI</h3><p>Tensió operativa global</p></div>
+            <div class="municipality-gauge-wrap"><div id="municipalityGauge" class="municipality-gauge"><div class="municipality-gauge-inner"><span id="municipalityTensionLabel">TENSIÓ MODERADA</span></div></div></div>
+            <div class="overview-card-foot"><i data-lucide="clock-3"></i><span>Actualitzat avui · <b id="overviewUpdatedTime">08:30</b></span></div>
           </article>
-          <section id="prediccio" class="prediction-block"><div class="section-title"><span>Predicció operativa 48 h</span><h2>Lectura intel·ligent dels PDF</h2></div><div id="sourcePredictionGrid" class="prediction-source-grid"></div></section>
+
+          <article class="overview-card corps-card">
+            <div class="overview-card-head"><h3>LECTURA OPERATIVA PER COS</h3></div>
+            <div class="corps-grid">
+              <div class="corp-row"><div class="corp-id"><span class="corp-chip pl">PL</span><strong>Policia Local</strong></div><div class="corp-metric"><small>Càrrega</small><strong id="plLoadPct">0%</strong><div class="mini-bar"><i id="plLoadBar"></i></div></div><div class="corp-metric"><small>Prioritat alta</small><strong id="plHighPct">0%</strong><div class="mini-bar red"><i id="plHighBar"></i></div></div><div class="corp-metric"><small>Pressió</small><strong id="plPressureLabel" class="pressure-dot">Baixa</strong></div></div>
+              <div class="corp-row"><div class="corp-id"><span class="corp-chip me">ME</span><strong>Mossos d'Esquadra</strong></div><div class="corp-metric"><small>Càrrega</small><strong id="meLoadPct">0%</strong><div class="mini-bar"><i id="meLoadBar"></i></div></div><div class="corp-metric"><small>Prioritat alta</small><strong id="meHighPct">0%</strong><div class="mini-bar red"><i id="meHighBar"></i></div></div><div class="corp-metric"><small>Pressió</small><strong id="mePressureLabel" class="pressure-dot">Baixa</strong></div></div>
+            </div>
+            <div class="overview-card-foot"><i data-lucide="clock-3"></i><span>Actualitzat avui · <b class="overviewUpdatedTimeClone">08:30</b></span></div>
+          </article>
+
+          <article class="overview-card risk-card">
+            <div class="overview-card-head"><h3>RISC I OCUPACIÓ OPERATIVA</h3></div>
+            <div class="risk-list">
+              <div class="risk-row"><div class="risk-label"><i class="risk-dot high"></i><span>Alta</span></div><strong id="riskHighPct">0%</strong><div class="risk-track"><i id="riskHighBar"></i></div></div>
+              <div class="risk-row"><div class="risk-label"><i class="risk-dot medium"></i><span>Mitjana</span></div><strong id="riskMediumPct">0%</strong><div class="risk-track amber"><i id="riskMediumBar"></i></div></div>
+              <div class="risk-row"><div class="risk-label"><i class="risk-dot low"></i><span>Baixa</span></div><strong id="riskLowPct">0%</strong><div class="risk-track green"><i id="riskLowBar"></i></div></div>
+            </div>
+            <div class="overview-card-foot"><i data-lucide="clock-3"></i><span>Actualitzat avui · <b class="overviewUpdatedTimeClone">08:30</b></span></div>
+          </article>
         </div>
-        <aside class="right-column">
-          <article id="ia" class="panel ai-panel"><div class="panel-head compact"><div><h2>Intel·ligència SIPDA</h2><p>Lectura executiva, patró principal i recomanació sobre novetats PL/ME.</p></div><span class="status-pill">SIPDA IA</span></div><div id="aiFeed" class="ai-feed"></div></article>
-          <article id="zones" class="panel hotzones-panel"><div class="panel-head compact"><div><h2>Zones calentes</h2><p>Dades operatives reals agrupades per zona, risc i franja.</p></div></div><div id="hotZones" class="zone-list"></div></article>
-        </aside>
+
+        <div class="sipda-overview-bottom">
+          <article class="mini-kpi-card"><div class="mini-kpi-icon blue"><i data-lucide="clipboard-list"></i></div><div><small>Serveis acumulats</small><strong id="overviewTotalServices">0</strong><span id="overviewTotalIncidents">0 incidències</span></div></article>
+          <article class="mini-kpi-card"><div class="mini-kpi-icon red"><i data-lucide="triangle-alert"></i></div><div><small>Prioritat alta</small><strong id="overviewHighCount">0</strong><span>semàfor vermell</span></div></article>
+          <article class="mini-kpi-card"><div class="mini-kpi-icon amber"><i data-lucide="circle-alert"></i></div><div><small>Prioritat mitjana</small><strong id="overviewMediumCount">0</strong><span>semàfor ambre</span></div></article>
+          <article class="mini-kpi-card"><div class="mini-kpi-icon green"><i data-lucide="circle-check"></i></div><div><small>Prioritat baixa</small><strong id="overviewLowCount">0</strong><span>semàfor verd</span></div></article>
+        </div>
       </section>
 
-      <div id="timeline" hidden aria-hidden="true"><div id="timelineRows" class="timeline-list"></div></div>
+      <section class="map-only-layout">
+        <article id="mapa" class="panel map-panel">
+          <div class="panel-head"><div><h2>Mapa operatiu conjunt</h2><p>Un únic mapa amb punts diferenciats per cos i prioritat per semàfor.</p></div><div class="legend-strip"><span><b class="chip pl">PL</b>Policia Local</span><span><b class="chip me">ME</b>Mossos</span><span><i class="signal high"></i>Alta</span><span><i class="signal medium"></i>Mitjana</span><span><i class="signal low"></i>Baixa</span></div></div>
+          <div id="sipdaMap" class="map-canvas"></div>
+        </article>
+      </section>
+
+      <div class="sipda-hidden-data" aria-hidden="true">
+        <section class="kpi-grid"><article class="kpi-card"><span>Serveis acumulats</span><strong id="kpiTotal">0</strong><em id="kpiReports">0 informes</em></article><article class="kpi-card sem-high"><span>Prioritat alta</span><strong id="kpiHigh">0</strong><em>semàfor vermell</em></article><article class="kpi-card sem-medium"><span>Prioritat mitjana</span><strong id="kpiMedium">0</strong><em>semàfor ambre</em></article><article class="kpi-card sem-low"><span>Prioritat baixa</span><strong id="kpiLow">0</strong><em>semàfor verd</em></article></section>
+        <div id="sourcePredictionGrid" class="prediction-source-grid"></div><div id="aiFeed" class="ai-feed"></div><div id="hotZones" class="zone-list"></div><div id="timeline"><div id="timelineRows" class="timeline-list"></div></div>
+      </div>
     </main>
   </div>
 
-  <section id="periodPopover" class="period-popover" hidden aria-label="Seleccionar període">
-    <div class="period-card">
-      <header class="period-head"><div><strong>Seleccionar període</strong><span>Filtra la lectura operativa</span></div><button id="periodClose" class="period-close" type="button" aria-label="Tancar"><i data-lucide="x"></i></button></header>
-      <div class="period-quick"><button class="period-chip active" type="button" data-period-preset="today">Avui</button><button class="period-chip" type="button" data-period-preset="7d">7 dies</button><button class="period-chip" type="button" data-period-preset="30d">30 dies</button><button class="period-chip" type="button" data-period-preset="custom">Manual</button></div>
-      <div class="period-calendar">
-        <div class="period-month"><strong id="periodMonthLabel">Mes</strong><div class="period-nav"><button id="periodPrev" type="button" aria-label="Mes anterior"><i data-lucide="chevron-left"></i></button><button id="periodNext" type="button" aria-label="Mes següent"><i data-lucide="chevron-right"></i></button></div></div>
-        <div class="period-weekdays"><span>Dl</span><span>Dt</span><span>Dc</span><span>Dj</span><span>Dv</span><span>Ds</span><span>Dg</span></div>
-        <div id="periodDays" class="period-days"></div>
-      </div>
-      <footer class="period-actions"><button id="periodCancel" class="period-cancel" type="button">Cancel·lar</button><button id="periodApply" class="period-apply" type="button">Aplicar</button></footer>
-    </div>
-  </section>
+  <section id="periodPopover" class="period-popover" hidden aria-label="Seleccionar període"><div class="period-card"><header class="period-head"><div><strong>Seleccionar període</strong><span>Filtra la lectura operativa</span></div><button id="periodClose" class="period-close" type="button" aria-label="Tancar"><i data-lucide="x"></i></button></header><div class="period-quick"><button class="period-chip active" type="button" data-period-preset="today">Avui</button><button class="period-chip" type="button" data-period-preset="7d">7 dies</button><button class="period-chip" type="button" data-period-preset="30d">30 dies</button><button class="period-chip" type="button" data-period-preset="custom">Manual</button></div><div class="period-calendar"><div class="period-month"><strong id="periodMonthLabel">Mes</strong><div class="period-nav"><button id="periodPrev" type="button" aria-label="Mes anterior"><i data-lucide="chevron-left"></i></button><button id="periodNext" type="button" aria-label="Mes següent"><i data-lucide="chevron-right"></i></button></div></div><div class="period-weekdays"><span>Dl</span><span>Dt</span><span>Dc</span><span>Dj</span><span>Dv</span><span>Ds</span><span>Dg</span></div><div id="periodDays" class="period-days"></div></div><footer class="period-actions"><button id="periodCancel" class="period-cancel" type="button">Cancel·lar</button><button id="periodApply" class="period-apply" type="button">Aplicar</button></footer></div></section>
 
-  <section id="importModal" class="modal" hidden aria-label="Importar informe SIPDA">
-    <div class="modal-card">
-      <header class="modal-head"><div><strong>Pujar informe</strong><span>Lectura intel·ligent local SIPDA v7</span></div><button id="closeImport" type="button" aria-label="Tancar"><i data-lucide="x"></i></button></header>
-      <div class="modal-body"><div class="drop-zone"><i data-lucide="file-search"></i><strong>Selecciona informe PDF</strong><span>Compatible amb informes de Policia Local i Mossos d'Esquadra.</span><button id="choosePdf" class="btn black" type="button">Seleccionar PDF</button><input id="pdfInput" type="file" accept="application/pdf" hidden></div><div class="progress"><span id="importProgress"></span></div><p id="importStatus" class="status-text">Preparat per llegir informe.</p><div id="importPreview" class="import-preview"></div></div>
-      <footer class="modal-actions"><button id="cancelImport" class="btn white" type="button">Cancel·lar</button><button id="applyPanel" class="btn white" type="button" disabled>Només veure al panell</button><button id="addHistory" class="btn black" type="button" disabled>Afegir a l'històric</button></footer>
-    </div>
-  </section>
+  <section id="importModal" class="modal" hidden aria-label="Importar informe SIPDA"><div class="modal-card"><header class="modal-head"><div><strong>Pujar informe</strong><span>Lectura intel·ligent local SIPDA v7</span></div><button id="closeImport" type="button" aria-label="Tancar"><i data-lucide="x"></i></button></header><div class="modal-body"><div class="drop-zone"><i data-lucide="file-search"></i><strong>Selecciona informe PDF</strong><span>Compatible amb informes de Policia Local i Mossos d'Esquadra.</span><button id="choosePdf" class="btn black" type="button">Seleccionar PDF</button><input id="pdfInput" type="file" accept="application/pdf" hidden></div><div class="progress"><span id="importProgress"></span></div><p id="importStatus" class="status-text">Preparat per llegir informe.</p><div id="importPreview" class="import-preview"></div></div><footer class="modal-actions"><button id="cancelImport" class="btn white" type="button">Cancel·lar</button><button id="applyPanel" class="btn white" type="button" disabled>Només veure al panell</button><button id="addHistory" class="btn black" type="button" disabled>Afegir a l'històric</button></footer></div></section>
 
   <nav class="mobile-nav" aria-label="Navegació mòbil"><a class="active" href="#situacio"><i data-lucide="scan-line"></i><span>Inici</span></a><a href="#mapa"><i data-lucide="map"></i><span>Mapa</span></a><a href="#prediccio"><i data-lucide="radar"></i><span>48 h</span></a><a href="#zones"><i data-lucide="shield-alert"></i><span>Zones</span></a></nav>
 
@@ -134,6 +137,7 @@
     document.write('<script src="./assets/js/sipda-period-popover.js?v=' + window.SIPDA_BUILD + '"><\/script>');
     document.write('<script src="./assets/js/sipda-map-layers.js?v=' + window.SIPDA_BUILD + '"><\/script>');
     document.write('<script src="./assets/js/sipda-v7-intel-card.js?v=' + window.SIPDA_BUILD + '"><\/script>');
+    document.write('<script src="./assets/js/sipda-overview-cards.js?v=' + window.SIPDA_BUILD + '"><\/script>');
   </script>
 </body>
 </html>
