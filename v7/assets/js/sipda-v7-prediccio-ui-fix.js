@@ -1,6 +1,6 @@
 /* SIPDA v7 · ajuste visual prediccio 48H */
 (function(){
-  const BUILD='sipda-v7-prediccio-ui-premium-button-2026-05-22';
+  const BUILD='sipda-v7-prediccio-ui-clean-no-intro-card-2026-05-22';
   let iconRefreshLock=false;
 
   function style(){
@@ -11,9 +11,13 @@
       document.head.appendChild(css);
     }
     css.textContent=`
+      #prediccio > .section-title{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important}
+      #ia.ai-panel{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;border:0!important}
+      #prediccio.prediction-block{margin-top:0!important;padding-top:0!important}
       #sourcePredictionGrid{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;gap:0!important}
       .sipda-intel-matrix-column{display:none!important}
       .sipda-intel-main-grid{grid-template-columns:1fr!important}
+      .sipda-intel-side{display:grid!important;grid-template-columns:1fr!important;gap:14px!important}
 
       .sipda-prediction-48-btn,
       #sipdaPrediction48Button{
@@ -87,6 +91,8 @@
   function removeInitialPredictionCards(){
     const grid=document.getElementById('sourcePredictionGrid');
     if(grid && grid.innerHTML) grid.innerHTML='';
+    const ai=document.getElementById('ia');
+    if(ai) ai.setAttribute('aria-hidden','true');
   }
 
   function ensureButtonVisible(){
@@ -119,7 +125,7 @@
     removeInitialPredictionCards();
     ensureButtonVisible();
     setButtonState();
-    window.SIPDA_PREDICCIO_UI_FIX={build:BUILD,active:true};
+    window.SIPDA_PREDICCIO_UI_FIX={build:BUILD,active:true,introCardHidden:true};
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{tick();setInterval(tick,450);});
