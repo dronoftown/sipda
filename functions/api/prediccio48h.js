@@ -16,22 +16,12 @@ function safeText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-function jsonText(value) {
-  return String(value || "{}")
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/```$/i, "")
-    .trim();
-}
-
 function getConfig(env) {
   const key = env.GEMINI_API_KEY || env.SIPDA_UPSTREAM_KEY || "";
-  const url = env.SIPDA_UPSTREAM_URL || DEFAULT_URL;
-  const model = env.SIPDA_MODEL || DEFAULT_MODEL;
   return {
     key,
-    url,
-    model,
+    url: env.SIPDA_UPSTREAM_URL || DEFAULT_URL,
+    model: env.SIPDA_MODEL || DEFAULT_MODEL,
     header: env.SIPDA_UPSTREAM_KEY_HEADER || "X-goog-api-key"
   };
 }
@@ -51,39 +41,78 @@ function configStatus(env) {
   };
 }
 
+function stripFence(text) {
+  return String(text || "{}")
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+}
+
+function firstJsonObject(text) {
+  const s = stripFence(text);
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start >= 0 && end > start) return s.slice(start, end + 1);
+  return s;
+}
+
+function parseAiJson(raw) {
+  const variants = [];
+  variants.push(stripFence(raw));
+  variants.push(firstJsonObject(raw));
+  try {
+    const once = JSON.parse(stripFence(raw));
+    if (typeof once === "string") variants.push(stripFence(once), firstJsonObject(once));
+    else return once;
+  } catch (_) {}
+
+  for (const item of variants) {
+    try {
+      const cleaned = String(item)
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]");
+      const parsed = JSON.parse(cleaned);
+      if (typeof parsed === "string") return JSON.parse(stripFence(parsed));
+      return parsed;
+    } catch (_) {}
+  }
+
+  throw new Error("INVALID_JSON");
+}
+
 function buildPrompt(informePoliciaLocal, informeMossos) {
-  return `Ets SIPDA, un sistema d'intel·ligència policial municipal.
+  return `Ets SIPDA, sistema d'intel·ligència policial municipal.
 
-Analitza les novetats carregades i genera una predicció operativa real per a les properes 48 hores.
+Objectiu: generar una predicció operativa real de les properes 48 hores a partir de les novetats carregades.
 
-Normes obligatòries:
-- Escriu sempre en català.
-- No repeteixis només el que ja ha passat.
-- Has de predir riscos probables a partir dels patrons detectats.
-- No limitis artificialment el nombre de resultats.
-- Si hi ha molts riscos alts, retorna'ls tots.
+Regles:
+- Escriu només en català.
+- No expliquis només el que ja ha passat: projecta riscos probables.
 - No inventis dades sense base documental.
-- Tracta Policia Local i Mossos com dues fonts policials equivalents.
-- Retorna només JSON vàlid.
+- No limitis artificialment els riscos importants, però escriu cada fila de forma breu i operativa.
+- Cada camp ha de ser concís, màxim 180 caràcters.
+- Policia Local i Mossos tenen valor equivalent.
+- Retorna NOMÉS JSON vàlid, sense markdown, sense text extra.
 
-Format obligatori:
+JSON obligatori:
 {
-  "resumExecutiu": "",
+  "resumExecutiu": "text breu",
   "prediccio48h": [
     {
-      "risc": "",
-      "zona": "",
-      "franja": "",
-      "prioritat": "Alta | Mitjana | Baixa",
-      "probabilitat": "",
-      "impacte": "",
-      "baseDocumental": "",
-      "prediccio": "",
-      "accioPreventiva": ""
+      "risc": "text",
+      "zona": "text",
+      "franja": "text",
+      "prioritat": "Alta",
+      "probabilitat": "Alta",
+      "impacte": "Alt",
+      "baseDocumental": "text",
+      "prediccio": "text",
+      "accioPreventiva": "text"
     }
   ],
-  "patronsDetectats": [],
-  "recomanacioComandament": ""
+  "patronsDetectats": ["text"],
+  "recomanacioComandament": "text"
 }
 
 INFORME POLICIA LOCAL:
@@ -93,24 +122,44 @@ INFORME MOSSOS:
 ${informeMossos || "No aportat"}`;
 }
 
+const responseSchema = {
+  type: "OBJECT",
+  properties: {
+    resumExecutiu: { type: "STRING" },
+    prediccio48h: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          risc: { type: "STRING" },
+          zona: { type: "STRING" },
+          franja: { type: "STRING" },
+          prioritat: { type: "STRING" },
+          probabilitat: { type: "STRING" },
+          impacte: { type: "STRING" },
+          baseDocumental: { type: "STRING" },
+          prediccio: { type: "STRING" },
+          accioPreventiva: { type: "STRING" }
+        },
+        required: ["risc", "zona", "franja", "prioritat", "probabilitat", "impacte", "baseDocumental", "prediccio", "accioPreventiva"]
+      }
+    },
+    patronsDetectats: { type: "ARRAY", items: { type: "STRING" } },
+    recomanacioComandament: { type: "STRING" }
+  },
+  required: ["resumExecutiu", "prediccio48h", "patronsDetectats", "recomanacioComandament"]
+};
+
 export async function onRequest(context) {
   const { request, env } = context;
   const cfg = getConfig(env);
 
   if (request.method === "OPTIONS") return new Response(null, { headers });
-
-  if (request.method === "GET") {
-    return reply(configStatus(env));
-  }
-
+  if (request.method === "GET") return reply(configStatus(env));
   if (request.method !== "POST") return reply({ error: "Use POST" }, 405);
 
   if (!cfg.key) {
-    return reply({
-      error: "Falta configurar la clau Gemini a Cloudflare",
-      config: configStatus(env),
-      missing: ["GEMINI_API_KEY"]
-    }, 500);
+    return reply({ error: "Falta configurar GEMINI_API_KEY", config: configStatus(env) }, 500);
   }
 
   try {
@@ -123,7 +172,6 @@ export async function onRequest(context) {
     }
 
     const prompt = buildPrompt(informePoliciaLocal, informeMossos);
-
     const upstreamResponse = await fetch(cfg.url, {
       method: "POST",
       headers: {
@@ -131,17 +179,13 @@ export async function onRequest(context) {
         [cfg.header]: cfg.key
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt }
-            ]
-          }
-        ],
+        contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 8192,
-          responseMimeType: "application/json"
+          temperature: 0.15,
+          topP: 0.8,
+          maxOutputTokens: 16384,
+          responseMimeType: "application/json",
+          responseSchema
         }
       })
     });
@@ -149,24 +193,23 @@ export async function onRequest(context) {
     const upstreamData = await upstreamResponse.json();
 
     if (!upstreamResponse.ok) {
-      return reply({
-        error: "Error del motor IA",
-        status: upstreamResponse.status,
-        details: upstreamData
-      }, 502);
+      return reply({ error: "Error del motor IA", status: upstreamResponse.status, details: upstreamData }, 502);
     }
 
     const raw = upstreamData?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
     let parsed;
-
     try {
-      parsed = JSON.parse(jsonText(raw));
+      parsed = parseAiJson(raw);
     } catch (error) {
       return reply({
         error: "El motor IA no ha retornat JSON vàlid",
-        raw
+        reason: error.message,
+        rawPreview: String(raw).slice(0, 2500)
       }, 502);
     }
+
+    if (!Array.isArray(parsed.prediccio48h)) parsed.prediccio48h = [];
+    if (!Array.isArray(parsed.patronsDetectats)) parsed.patronsDetectats = [];
 
     return reply({
       motor: "SIPDA IA",
