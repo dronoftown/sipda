@@ -12,8 +12,30 @@ function reply(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers });
 }
 
-function clean(value, max = 12000) {
+function clean(value, max = 24000) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function stripFence(text) {
+  return String(text || "{}")
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+}
+
+function parseStructured(raw) {
+  try {
+    return JSON.parse(stripFence(raw));
+  } catch (_) {
+    const s = stripFence(raw);
+    const start = s.indexOf("{");
+    const end = s.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try { return JSON.parse(s.slice(start, end + 1)); } catch (_) {}
+    }
+  }
+  return { mode: "analysis", answer: String(raw || "No he pogut generar resposta."), document: null, chart: null, table: null, actions: [] };
 }
 
 function getConfig(env) {
@@ -33,46 +55,76 @@ function configStatus(env) {
     mode: cfg.key ? "ai-ready" : "missing-key",
     model: cfg.model,
     hasKey: Boolean(cfg.key),
+    capabilities: ["analysis", "document", "chart", "table", "attachment"],
     timestamp: new Date().toISOString()
   };
 }
 
-function buildPrompt({ message, history, context }) {
-  const serviceContext = Array.isArray(context?.services) ? context.services.slice(0, 180) : [];
-  const predictionContext = Array.isArray(context?.predictionRows) ? context.predictionRows.slice(0, 80) : [];
-  const rawContext = clean(context?.rawText || "", 18000);
-  const hist = Array.isArray(history) ? history.slice(-8) : [];
+function detectMode(message) {
+  const m = clean(message, 1000).toLowerCase();
+  if (/\b(pdf|document|informe|memòria|memoria|acta)\b/.test(m)) return "document";
+  if (/\b(gràfic|grafico|gráfico|chart|barra|pastís|lineal|evolució|evolucion)\b/.test(m)) return "chart";
+  if (/\b(taula|tabla|matriu|matriz|llistat|listado)\b/.test(m)) return "table";
+  if (/\b(resum|resumen|breu|ràpid|rapido)\b/.test(m)) return "summary";
+  return "analysis";
+}
 
-  return `Ets l'Agent SIPDA integrat dins d'una aplicació d'intel·ligència policial municipal.
+function buildPrompt({ message, history, context, attachment }) {
+  const services = Array.isArray(context?.services) ? context.services.slice(0, 350) : [];
+  const predictions = Array.isArray(context?.predictionRows) ? context.predictionRows.slice(0, 160) : [];
+  const rawContext = clean(context?.rawText || "", 32000);
+  const hist = Array.isArray(history) ? history.slice(-14) : [];
+  const desiredMode = detectMode(message);
+  const attachmentText = clean(attachment?.text || "", 28000);
+  const attachmentMeta = attachment?.name ? JSON.stringify({ name: attachment.name, type: attachment.type || "unknown", size: attachment.size || null, hasText: Boolean(attachmentText), hasFile: Boolean(attachment?.data && attachment?.mimeType) }, null, 2) : "No aportat";
 
-MISSIÓ:
-Ajudar el comandament a entendre novetats, riscos, patrons, zones, franges, predicció 48 h i accions preventives. Has de respondre en català, amb estil professional, executiu i policial.
+  return `Ets l'Agent SIPDA integrat dins d'una aplicacio d'intelligencia operativa municipal.
 
-NORMES:
-- No inventis dades si no apareixen al context.
-- Si falta informació, digues-ho clarament.
-- Diferencia fets documentats, patró detectat i recomanació operativa.
-- Dona respostes útils per comandament: breus, accionables i justificades.
-- No revelis claus, secrets ni detalls tècnics interns.
-- No donis instruccions il·lícites ni invasives. Mantén criteri legal, proporcional i preventiu.
-- Quan et demanin predicció, projecta escenaris probables a 48 h basats en recurrència, zona, franja i prioritat.
+MISSIO:
+Aportar valor real al comandament. No siguis escuet. Quan et demanin analisi, informe, pdf, grafic o taula, has de desenvolupar la resposta, ordenar-la i donar criteri operatiu.
 
-CONTEXT OPERATIU NORMALITZAT:
-${JSON.stringify(serviceContext, null, 2)}
+MODE DETECTAT: ${desiredMode}
 
-CONTEXT DE PREDICCIÓ EXISTENT:
-${JSON.stringify(predictionContext, null, 2)}
+REGLES:
+- Respon sempre en catala.
+- Aporta valor: interpreta, ordena, prioritza i recomana.
+- Diferencia fets documentats, patrons, escenaris probables i accions.
+- Si falta base documental, digues-ho.
+- No inventis dades concretes no disponibles.
+- Si et demanen PDF, grafic o taula, genera contingut estructurat per renderitzar-lo dins SIPDA.
+- Retorna nomes JSON valid.
 
-TEXT BRUT / RESUM DOCUMENTAL DISPONIBLE:
+ESTRUCTURA JSON:
+{
+  "mode": "analysis | summary | document | chart | table | mixed",
+  "answer": "resposta principal desenvolupada",
+  "document": {"title": "", "subtitle": "", "sections": [{"heading": "", "content": ""}]},
+  "chart": {"type": "bar | line | doughnut", "title": "", "labels": [], "datasets": [{"label": "", "values": []}]},
+  "table": {"title": "", "headers": [], "rows": []},
+  "actions": []
+}
+
+CONTEXT NORMALITZAT:
+${JSON.stringify(services, null, 2)}
+
+PREDICCIO EXISTENT:
+${JSON.stringify(predictions, null, 2)}
+
+TEXT DISPONIBLE:
 ${rawContext || "No aportat"}
 
-HISTORIAL RECENT DE CONVERSA:
+FITXER APORTAT:
+${attachmentMeta}
+
+TEXT EXTRET DEL FITXER:
+${attachmentText || "No aportat"}
+
+HISTORIAL:
 ${JSON.stringify(hist, null, 2)}
 
-PREGUNTA DEL USUARI:
-${clean(message, 6000)}
-
-Respon en català. Usa títols curts si ajuda. No utilitzis markdown excessiu.`;
+PREGUNTA:
+${clean(message, 8000)}
+`;
 }
 
 export async function onRequest(context) {
@@ -82,48 +134,42 @@ export async function onRequest(context) {
   if (request.method === "OPTIONS") return new Response(null, { headers });
   if (request.method === "GET") return reply(configStatus(env));
   if (request.method !== "POST") return reply({ error: "Use POST" }, 405);
-
   if (!cfg.key) return reply({ error: "Falta configurar GEMINI_API_KEY", config: configStatus(env) }, 500);
 
   try {
     const body = await request.json();
-    const message = clean(body.message || "", 6000);
+    const message = clean(body.message || "", 8000);
     if (!message) return reply({ error: "Message required" }, 400);
 
-    const prompt = buildPrompt({
-      message,
-      history: body.history || [],
-      context: body.context || {}
-    });
+    const attachment = body.attachment || null;
+    const prompt = buildPrompt({ message, history: body.history || [], context: body.context || {}, attachment });
+    const parts = [{ text: prompt }];
+
+    if (attachment?.data && attachment?.mimeType) {
+      parts.push({ inlineData: { mimeType: attachment.mimeType, data: attachment.data } });
+    }
 
     const upstreamResponse = await fetch(cfg.url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        [cfg.header]: cfg.key
-      },
+      headers: { "Content-Type": "application/json", [cfg.header]: cfg.key },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
+        contents: [{ parts }],
         generationConfig: {
-          temperature: 0.25,
-          topP: 0.85,
-          maxOutputTokens: 4096
+          temperature: 0.35,
+          topP: 0.9,
+          maxOutputTokens: 12288,
+          responseMimeType: "application/json"
         }
       })
     });
 
     const upstreamData = await upstreamResponse.json();
-    if (!upstreamResponse.ok) {
-      return reply({ error: "Error del motor IA", status: upstreamResponse.status, details: upstreamData }, 502);
-    }
+    if (!upstreamResponse.ok) return reply({ error: "Error del motor IA", status: upstreamResponse.status, details: upstreamData }, 502);
 
-    const answer = upstreamData?.candidates?.[0]?.content?.parts?.[0]?.text || "No he pogut generar resposta.";
-    return reply({
-      motor: "Agent SIPDA",
-      model: cfg.model,
-      generatedAt: new Date().toISOString(),
-      answer
-    });
+    const raw = upstreamData?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+    const structured = parseStructured(raw);
+
+    return reply({ motor: "Agent SIPDA", model: cfg.model, generatedAt: new Date().toISOString(), ...structured });
   } catch (error) {
     return reply({ error: "Gem chat failed", detail: error.message }, 500);
   }
