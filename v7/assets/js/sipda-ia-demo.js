@@ -1,5 +1,5 @@
 (function(){
-  const agentUrl = 'https://m365.cloud.microsoft/chat/?titleId=T_d294464c-f9e5-b62a-cbab-12d1e9b2d525&source=embedded-builder';
+  const agentUrl = 'https://m365.cloud.microsoft/chat/';
 
   function addStyle(){
     if(document.getElementById('sipda-ia-demo-style')) return;
@@ -17,6 +17,7 @@
       .sipda-ia-card h2{margin:0;font-size:24px;color:#101828;letter-spacing:-.03em}
       .sipda-ia-card p{margin:10px 0 18px;color:#475467;font-size:14px;line-height:1.5}
       .sipda-ia-warning{padding:12px 14px;border-radius:16px;background:#fff7ed;color:#9a3412;font-size:12px;font-weight:700;margin-bottom:20px;line-height:1.4}
+      .sipda-ia-help{margin:0 0 18px;padding:12px 14px;border-radius:16px;background:#f8fafc;color:#475467;font-size:12px;line-height:1.45;border:1px solid #eef2f7}
       .sipda-ia-open{width:100%;height:46px;border:0;border-radius:16px;background:#0054A6;color:#fff;font-weight:800;font-size:14px;cursor:pointer}
       @media(max-width:768px){.sipda-ia-btn{right:18px;bottom:82px}.sipda-ia-card{border-radius:24px;padding:28px}}
     `;
@@ -36,9 +37,10 @@
           <button id="sipdaIaClose" class="sipda-ia-close" type="button" aria-label="Tancar">×</button>
           <div class="sipda-ia-icon">IA</div>
           <h2 id="sipdaIaTitle">SIPDA IA</h2>
-          <p>Agent d’intel·ligència operativa policial municipal. Aquesta demo obre l’agent dins de Microsoft 365 Copilot.</p>
+          <p>Agent d’intel·ligència operativa policial municipal. Aquesta demo obre Microsoft 365 Copilot.</p>
           <div class="sipda-ia-warning">Versió demo sense autenticació avançada. No utilitzar dades policials reals ni informació sensible.</div>
-          <button id="sipdaIaOpen" class="sipda-ia-open" type="button">Obrir agent SIPDA IA</button>
+          <div class="sipda-ia-help">En obrir-se Microsoft 365, selecciona l’agent <strong>SIPDA IA</strong> des del lateral o des d’agents ancorats.</div>
+          <button id="sipdaIaOpen" class="sipda-ia-open" type="button">Obrir Microsoft 365 Copilot</button>
         </div>
       </div>
     `;
