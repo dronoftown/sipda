@@ -5,6 +5,9 @@ const headers = {
   "Content-Type": "application/json; charset=utf-8"
 };
 
+const DEFAULT_MODEL = "gemini-2.5-flash";
+const DEFAULT_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + DEFAULT_MODEL + ":generateContent";
+
 function reply(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers });
 }
@@ -21,15 +24,29 @@ function jsonText(value) {
     .trim();
 }
 
-function configStatus(env) {
+function getConfig(env) {
+  const key = env.GEMINI_API_KEY || env.SIPDA_UPSTREAM_KEY || "";
+  const url = env.SIPDA_UPSTREAM_URL || DEFAULT_URL;
+  const model = env.SIPDA_MODEL || DEFAULT_MODEL;
   return {
-    ok: Boolean(env.SIPDA_UPSTREAM_URL && env.SIPDA_UPSTREAM_KEY),
+    key,
+    url,
+    model,
+    header: env.SIPDA_UPSTREAM_KEY_HEADER || "X-goog-api-key"
+  };
+}
+
+function configStatus(env) {
+  const cfg = getConfig(env);
+  return {
+    ok: Boolean(cfg.key && cfg.url),
     service: "sipda-prediccio48h",
-    mode: env.SIPDA_UPSTREAM_URL && env.SIPDA_UPSTREAM_KEY ? "ai-ready" : "missing-config",
-    model: env.SIPDA_MODEL || "gemini",
-    hasUrl: Boolean(env.SIPDA_UPSTREAM_URL),
-    hasKey: Boolean(env.SIPDA_UPSTREAM_KEY),
-    keyHeader: env.SIPDA_UPSTREAM_KEY_HEADER || "X-goog-api-key",
+    mode: cfg.key ? "ai-ready" : "missing-key",
+    model: cfg.model,
+    hasUrl: Boolean(cfg.url),
+    hasKey: Boolean(cfg.key),
+    accepts: ["GEMINI_API_KEY", "SIPDA_UPSTREAM_KEY"],
+    keyHeader: cfg.header,
     timestamp: new Date().toISOString()
   };
 }
@@ -78,6 +95,7 @@ ${informeMossos || "No aportat"}`;
 
 export async function onRequest(context) {
   const { request, env } = context;
+  const cfg = getConfig(env);
 
   if (request.method === "OPTIONS") return new Response(null, { headers });
 
@@ -87,15 +105,11 @@ export async function onRequest(context) {
 
   if (request.method !== "POST") return reply({ error: "Use POST" }, 405);
 
-  const cfg = configStatus(env);
-  if (!cfg.ok) {
+  if (!cfg.key) {
     return reply({
-      error: "Falten secrets de Cloudflare",
-      config: cfg,
-      missing: [
-        !env.SIPDA_UPSTREAM_URL ? "SIPDA_UPSTREAM_URL" : null,
-        !env.SIPDA_UPSTREAM_KEY ? "SIPDA_UPSTREAM_KEY" : null
-      ].filter(Boolean)
+      error: "Falta configurar la clau Gemini a Cloudflare",
+      config: configStatus(env),
+      missing: ["GEMINI_API_KEY"]
     }, 500);
   }
 
@@ -109,13 +123,12 @@ export async function onRequest(context) {
     }
 
     const prompt = buildPrompt(informePoliciaLocal, informeMossos);
-    const headerName = env.SIPDA_UPSTREAM_KEY_HEADER || "X-goog-api-key";
 
-    const upstreamResponse = await fetch(env.SIPDA_UPSTREAM_URL, {
+    const upstreamResponse = await fetch(cfg.url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        [headerName]: env.SIPDA_UPSTREAM_KEY
+        [cfg.header]: cfg.key
       },
       body: JSON.stringify({
         contents: [
@@ -157,7 +170,7 @@ export async function onRequest(context) {
 
     return reply({
       motor: "SIPDA IA",
-      model: env.SIPDA_MODEL || "gemini",
+      model: cfg.model,
       generatA: new Date().toISOString(),
       ...parsed
     });
