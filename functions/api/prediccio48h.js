@@ -1,6 +1,6 @@
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
   "Content-Type": "application/json; charset=utf-8"
 };
@@ -19,6 +19,19 @@ function jsonText(value) {
     .replace(/^```\s*/i, "")
     .replace(/```$/i, "")
     .trim();
+}
+
+function configStatus(env) {
+  return {
+    ok: Boolean(env.SIPDA_UPSTREAM_URL && env.SIPDA_UPSTREAM_KEY),
+    service: "sipda-prediccio48h",
+    mode: env.SIPDA_UPSTREAM_URL && env.SIPDA_UPSTREAM_KEY ? "ai-ready" : "missing-config",
+    model: env.SIPDA_MODEL || "gemini",
+    hasUrl: Boolean(env.SIPDA_UPSTREAM_URL),
+    hasKey: Boolean(env.SIPDA_UPSTREAM_KEY),
+    keyHeader: env.SIPDA_UPSTREAM_KEY_HEADER || "X-goog-api-key",
+    timestamp: new Date().toISOString()
+  };
 }
 
 function buildPrompt(informePoliciaLocal, informeMossos) {
@@ -67,11 +80,18 @@ export async function onRequest(context) {
   const { request, env } = context;
 
   if (request.method === "OPTIONS") return new Response(null, { headers });
+
+  if (request.method === "GET") {
+    return reply(configStatus(env));
+  }
+
   if (request.method !== "POST") return reply({ error: "Use POST" }, 405);
 
-  if (!env.SIPDA_UPSTREAM_URL || !env.SIPDA_UPSTREAM_KEY) {
+  const cfg = configStatus(env);
+  if (!cfg.ok) {
     return reply({
       error: "Falten secrets de Cloudflare",
+      config: cfg,
       missing: [
         !env.SIPDA_UPSTREAM_URL ? "SIPDA_UPSTREAM_URL" : null,
         !env.SIPDA_UPSTREAM_KEY ? "SIPDA_UPSTREAM_KEY" : null
