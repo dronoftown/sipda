@@ -1,6 +1,8 @@
 /* SIPDA v7 · ajuste visual prediccio 48H */
 (function(){
-  const BUILD='sipda-v7-prediccio-ui-fix-strong-2026-05-21';
+  const BUILD='sipda-v7-prediccio-ui-premium-button-2026-05-22';
+  let iconRefreshLock=false;
+
   function style(){
     let css=document.getElementById('sipdaPred48UiFixStyle');
     if(!css){
@@ -17,94 +19,76 @@
       #sipdaPrediction48Button{
         position:relative!important;
         isolation:isolate!important;
-        min-width:168px!important;
-        height:43px!important;
-        padding:0 18px!important;
-        background:#0054A6!important;
-        border:2px solid #0054A6!important;
+        min-width:166px!important;
+        height:42px!important;
+        padding:0 16px!important;
+        border-radius:14px!important;
+        background:#101828!important;
+        border:1px solid #101828!important;
         color:#fff!important;
-        font-weight:950!important;
-        letter-spacing:.02em!important;
-        text-transform:uppercase!important;
-        transform-origin:center!important;
-        animation:sipdaPred48MegaPulse 1.05s ease-in-out infinite!important;
-        box-shadow:0 0 0 0 rgba(0,84,166,.75),0 0 28px rgba(0,84,166,.55)!important;
+        font-weight:850!important;
+        letter-spacing:.005em!important;
+        text-transform:none!important;
+        transform:none!important;
+        animation:none!important;
+        box-shadow:0 8px 18px rgba(16,24,40,.16)!important;
+        display:inline-flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        gap:9px!important;
+        overflow:hidden!important;
+        transition:background-color .22s ease,border-color .22s ease,box-shadow .22s ease,transform .18s ease!important;
+      }
+      .sipda-prediction-48-btn:hover,
+      #sipdaPrediction48Button:hover{
+        transform:translateY(-1px)!important;
+        box-shadow:0 12px 24px rgba(16,24,40,.18)!important;
       }
       .sipda-prediction-48-btn svg,
       #sipdaPrediction48Button svg{
-        width:18px!important;
-        height:18px!important;
-        animation:sipdaPred48IconShake 1.05s ease-in-out infinite!important;
+        width:17px!important;
+        height:17px!important;
+        stroke-width:2.45!important;
+        animation:none!important;
+        transform-origin:center!important;
       }
       .sipda-prediction-48-btn::before,
-      #sipdaPrediction48Button::before{
-        content:"";
-        position:absolute;
-        inset:-8px;
-        z-index:-1;
-        background:rgba(0,84,166,.28);
-        border:2px solid rgba(0,84,166,.75);
-        opacity:.9;
-        animation:sipdaPred48OuterHalo 1.05s ease-in-out infinite!important;
-      }
       .sipda-prediction-48-btn::after,
+      #sipdaPrediction48Button::before,
       #sipdaPrediction48Button::after{
-        content:"48H";
-        position:absolute;
-        top:-10px;
-        right:-10px;
-        min-width:34px;
-        height:22px;
-        padding:0 7px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        background:#ef4444;
-        color:#fff;
-        border:2px solid #fff;
-        font-size:10px;
-        font-weight:950;
-        line-height:1;
-        box-shadow:0 8px 18px rgba(239,68,68,.38);
-        animation:sipdaPred48Badge 1.05s ease-in-out infinite!important;
+        content:none!important;
+        display:none!important;
+        animation:none!important;
       }
-      @keyframes sipdaPred48MegaPulse{
-        0%,100%{
-          background:#050505;
-          border-color:#050505;
-          color:#fff;
-          transform:scale(1);
-          box-shadow:0 0 0 0 rgba(0,84,166,.0),0 8px 18px rgba(0,0,0,.18);
-        }
-        48%,55%{
-          background:#0054A6;
-          border-color:#38bdf8;
-          color:#fff;
-          transform:scale(1.075);
-          box-shadow:0 0 0 9px rgba(0,84,166,.24),0 0 36px rgba(0,84,166,.95),0 0 54px rgba(56,189,248,.46);
-        }
+      #sipdaPrediction48Button.is-analysing,
+      .sipda-prediction-48-btn.is-analysing{
+        background:#0054A6!important;
+        border-color:#0054A6!important;
+        color:#fff!important;
+        box-shadow:0 14px 34px rgba(0,84,166,.28)!important;
       }
-      @keyframes sipdaPred48OuterHalo{
-        0%,100%{opacity:.25;transform:scale(.94)}
-        50%{opacity:1;transform:scale(1.14)}
+      #sipdaPrediction48Button.is-analysing svg,
+      .sipda-prediction-48-btn.is-analysing svg{
+        animation:sipdaPred48IconDrift 1.05s ease-in-out infinite!important;
       }
-      @keyframes sipdaPred48Badge{
-        0%,100%{transform:scale(1);background:#ef4444}
-        50%{transform:scale(1.18);background:#f97316}
+      #sipdaPrediction48Button.is-analysing span,
+      .sipda-prediction-48-btn.is-analysing span{
+        letter-spacing:.01em!important;
       }
-      @keyframes sipdaPred48IconShake{
-        0%,100%{transform:rotate(0deg) scale(1)}
-        25%{transform:rotate(-8deg) scale(1.08)}
-        50%{transform:rotate(8deg) scale(1.15)}
-        75%{transform:rotate(-5deg) scale(1.08)}
+      @keyframes sipdaPred48IconDrift{
+        0%,100%{transform:translateY(0) rotate(0deg) scale(1)}
+        35%{transform:translateY(-1px) rotate(-10deg) scale(1.05)}
+        70%{transform:translateY(1px) rotate(10deg) scale(1.05)}
       }
       @media(max-width:1180px){.top-actions #sipdaPrediction48Button{grid-column:auto!important;min-width:100%!important}}
     `;
   }
+
   function removeInitialPredictionCards(){
     const grid=document.getElementById('sourcePredictionGrid');
     if(grid && grid.innerHTML) grid.innerHTML='';
   }
+
   function ensureButtonVisible(){
     const button=document.getElementById('sipdaPrediction48Button');
     const clear=document.getElementById('clearHistory');
@@ -112,7 +96,32 @@
       clear.parentElement.insertBefore(button,clear);
     }
   }
-  function tick(){style();removeInitialPredictionCards();ensureButtonVisible();window.SIPDA_PREDICCIO_UI_FIX={build:BUILD,active:true};}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{tick();setInterval(tick,700);});
-  else {tick();setInterval(tick,700);}
+
+  function setButtonState(){
+    const button=document.getElementById('sipdaPrediction48Button');
+    if(!button) return;
+    const modal=document.getElementById('sipdaPrediction48Modal');
+    const analysing=Boolean(modal && !modal.hidden && document.getElementById('sipdaPredStep'));
+    const current=button.classList.contains('is-analysing');
+    if(analysing===current) return;
+
+    button.classList.toggle('is-analysing',analysing);
+    button.innerHTML=analysing?'<i data-lucide="radar"></i><span>Analitzant...</span>':'<i data-lucide="radar"></i><span>Predicció 48H</span>';
+
+    if(window.lucide?.createIcons && !iconRefreshLock){
+      iconRefreshLock=true;
+      requestAnimationFrame(()=>{window.lucide.createIcons();iconRefreshLock=false;});
+    }
+  }
+
+  function tick(){
+    style();
+    removeInitialPredictionCards();
+    ensureButtonVisible();
+    setButtonState();
+    window.SIPDA_PREDICCIO_UI_FIX={build:BUILD,active:true};
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{tick();setInterval(tick,450);});
+  else {tick();setInterval(tick,450);}
 })();
