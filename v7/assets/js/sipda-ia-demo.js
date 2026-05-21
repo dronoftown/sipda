@@ -1,6 +1,6 @@
-/* SIPDA v7 · carregador del mòdul IA natiu */
+/* SIPDA v7 · carregador del modul IA natiu */
 (function(){
-  const BUILD='sipda-v7-ia-loader-live-ui-fix-2026-05-21';
+  const BUILD='sipda-v7-ia-loader-endpoint-bridge-2026-05-22';
   function loadScriptOnce(id,src){
     if(document.getElementById(id)) return;
     const script=document.createElement('script');
@@ -11,7 +11,8 @@
   function loadLivePrediction(){
     loadScriptOnce('sipda-v7-prediccio-live-loader','./assets/js/sipda-v7-prediccio-live.js');
     loadScriptOnce('sipda-v7-prediccio-ui-fix-loader','./assets/js/sipda-v7-prediccio-ui-fix.js');
-    window.SIPDA_IA_LOADER={build:BUILD,loaded:true};
+    loadScriptOnce('sipda-v7-endpoint-bridge-loader','./assets/js/sipda-v7-prediccio-endpoint-bridge.js');
+    window.SIPDA_IA_LOADER={build:BUILD,loaded:true,endpointBridge:true};
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadLivePrediction);
   else loadLivePrediction();
