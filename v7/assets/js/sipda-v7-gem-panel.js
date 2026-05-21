@@ -2,7 +2,7 @@
 (function(){
   const CHAT_ENDPOINT='https://sipda.pages.dev/api/gemchat';
   const GEM_URL='https://gemini.google.com/gem/1ZSBFOLRtKOOWgVvL7PbUTkqmEVp7zCN1?usp=sharing';
-  const BUILD='sipda-v7-native-agent-premium-ui-2026-05-22';
+  const BUILD='sipda-v7-native-agent-ui-rounded-bluechips-2026-05-22';
   const history=[];
 
   function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -20,30 +20,30 @@
       .is-locked #sipdaGemFloatButton{display:none!important}
       #sipdaGemFloatButton{
         position:fixed;
-        right:22px;
-        bottom:92px;
+        right:0;
+        bottom:104px;
         z-index:9990;
-        min-width:164px;
-        height:46px;
-        border:1px solid rgba(0,84,166,.18);
-        background:#fff;
-        color:#101828;
-        border-radius:16px;
-        box-shadow:0 14px 34px rgba(16,24,40,.12),0 0 0 1px rgba(255,255,255,.82) inset;
+        min-width:158px;
+        height:48px;
+        border:1px solid #101828;
+        background:#101828;
+        color:#fff;
+        border-radius:24px 0 0 24px;
+        box-shadow:0 18px 44px rgba(16,24,40,.24);
         display:flex;
         align-items:center;
         justify-content:center;
         gap:9px;
-        padding:0 16px;
+        padding:0 18px 0 16px;
         font-family:Inter,Arial,sans-serif;
         font-size:12px;
         font-weight:850;
         letter-spacing:-.01em;
         cursor:pointer;
-        transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
+        transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
       }
-      #sipdaGemFloatButton:hover{transform:translateY(-2px);border-color:rgba(0,84,166,.34);box-shadow:0 18px 44px rgba(16,24,40,.16)}
-      #sipdaGemFloatButton svg{width:17px;height:17px;stroke:#0054A6;stroke-width:2.45}
+      #sipdaGemFloatButton:hover{transform:translateX(-3px);background:#0054A6;border-color:#0054A6;box-shadow:0 22px 54px rgba(0,84,166,.30)}
+      #sipdaGemFloatButton svg{width:17px;height:17px;stroke:#fff;stroke-width:2.45}
       #sipdaGemPanelBackdrop{position:fixed;inset:0;z-index:9991;background:rgba(15,23,42,.18);backdrop-filter:blur(10px);display:none}
       #sipdaGemPanelBackdrop.open{display:block}
       #sipdaGemPanel{
@@ -51,12 +51,12 @@
         top:18px;
         right:18px;
         bottom:18px;
-        width:min(620px,calc(100vw - 28px));
+        width:min(640px,calc(100vw - 28px));
         z-index:9992;
         background:#fff;
         border:1px solid #e5e7eb;
-        border-radius:28px;
-        box-shadow:0 30px 90px rgba(16,24,40,.20),0 0 0 1px rgba(255,255,255,.9) inset;
+        border-radius:32px;
+        box-shadow:0 30px 90px rgba(16,24,40,.20),0 0 0 1px rgba(255,255,255,.92) inset;
         overflow:hidden;
         transform:translateX(calc(100% + 30px));
         transition:transform .28s cubic-bezier(.2,.8,.2,1);
@@ -66,40 +66,39 @@
       }
       #sipdaGemPanel.open{transform:translateX(0)}
       .sipda-agent-head{
-        min-height:86px;
+        min-height:88px;
         display:flex;
         align-items:center;
         justify-content:space-between;
         gap:16px;
-        padding:20px 20px 18px 22px;
+        padding:20px 22px 18px 22px;
         border-bottom:1px solid #eef2f6;
         background:linear-gradient(180deg,#fff 0%,#fbfcff 100%);
       }
       .sipda-agent-title{display:flex;align-items:center;gap:13px;min-width:0}
-      .sipda-agent-mark{width:46px;height:46px;border-radius:16px;background:#101828;color:#fff;display:grid;place-items:center;font-weight:900;font-size:12px;letter-spacing:.02em;box-shadow:0 12px 26px rgba(16,24,40,.18)}
+      .sipda-agent-mark{width:46px;height:46px;border-radius:18px;background:#101828;color:#fff;display:grid;place-items:center;font-weight:900;font-size:12px;letter-spacing:.02em;box-shadow:0 12px 26px rgba(16,24,40,.18)}
       .sipda-agent-title strong{display:block;font-size:17px;letter-spacing:-.035em;color:#101828;line-height:1.05}
       .sipda-agent-title span{display:block;margin-top:5px;font-size:12px;color:#667085;font-weight:650;letter-spacing:-.01em}
-      .sipda-agent-close{width:40px;height:40px;border-radius:14px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;cursor:pointer;color:#344054;transition:background .15s ease,border-color .15s ease,transform .15s ease}
+      .sipda-agent-close{width:42px;height:42px;border-radius:16px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;cursor:pointer;color:#344054;transition:background .15s ease,border-color .15s ease,transform .15s ease}
       .sipda-agent-close:hover{background:#f8fafc;border-color:#d0d5dd;transform:translateY(-1px)}
-      .sipda-agent-toolbar{display:flex;gap:8px;padding:13px 16px;border-bottom:1px solid #eef2f6;background:#fff;overflow:auto;scrollbar-width:none}
-      .sipda-agent-toolbar::-webkit-scrollbar{display:none}
-      .sipda-agent-chip{border:1px solid #e5e7eb;background:#fff;color:#344054;border-radius:999px;padding:8px 12px;font-size:11px;font-weight:760;white-space:nowrap;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:background .15s ease,border-color .15s ease,color .15s ease,transform .15s ease}
-      .sipda-agent-chip:hover{background:#f2f7ff;border-color:#bcd7ff;color:#0054A6;transform:translateY(-1px)}
-      .sipda-agent-feed{flex:1;min-height:0;overflow:auto;padding:18px;background:linear-gradient(180deg,#f8fafc 0%,#f6f8fb 100%);display:flex;flex-direction:column;gap:12px}
-      .sipda-agent-msg{max-width:88%;border:1px solid #e5e7eb;border-radius:20px;padding:13px 15px;font-size:13px;line-height:1.55;box-shadow:0 10px 26px rgba(16,24,40,.045);white-space:pre-wrap;letter-spacing:-.005em}
-      .sipda-agent-msg.user{align-self:flex-end;background:#0054A6;color:#fff;border-color:#0054A6;border-bottom-right-radius:8px;box-shadow:0 12px 28px rgba(0,84,166,.22)}
-      .sipda-agent-msg.ai{align-self:flex-start;background:#fff;color:#101828;border-bottom-left-radius:8px}
+      .sipda-agent-toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px 16px;border-bottom:1px solid #eef2f6;background:#fff}
+      .sipda-agent-chip{border:1px solid #0054A6;background:#0054A6;color:#fff;border-radius:18px;padding:11px 10px;font-size:11px;font-weight:850;white-space:normal;line-height:1.18;cursor:pointer;box-shadow:0 10px 22px rgba(0,84,166,.18);transition:background .15s ease,border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+      .sipda-agent-chip:hover{background:#003f7d;border-color:#003f7d;transform:translateY(-1px);box-shadow:0 14px 28px rgba(0,84,166,.26)}
+      .sipda-agent-feed{flex:1;min-height:0;overflow:auto;padding:18px;background:linear-gradient(180deg,#f8fafc 0%,#f6f8fb 100%);display:flex;flex-direction:column;gap:14px}
+      .sipda-agent-msg{max-width:89%;border:1px solid #e5e7eb;border-radius:24px;padding:14px 16px;font-size:13px;line-height:1.55;box-shadow:0 10px 26px rgba(16,24,40,.045);white-space:pre-wrap;letter-spacing:-.005em}
+      .sipda-agent-msg.user{align-self:flex-end;background:#0054A6;color:#fff;border-color:#0054A6;border-radius:24px 24px 8px 24px;box-shadow:0 12px 28px rgba(0,84,166,.22)}
+      .sipda-agent-msg.ai{align-self:flex-start;background:#fff;color:#101828;border-radius:24px 24px 24px 8px}
       .sipda-agent-msg small{display:block;margin-bottom:6px;font-size:10px;text-transform:uppercase;letter-spacing:.075em;font-weight:850;opacity:.55}
       .sipda-agent-msg.thinking{color:#667085;font-weight:650;background:#fff}
-      .sipda-agent-context{padding:12px 14px;border:1px solid #dbeafe;background:#eff6ff;color:#1e3a8a;border-radius:18px;font-size:12px;font-weight:650;line-height:1.5;box-shadow:0 6px 16px rgba(0,84,166,.04)}
-      .sipda-agent-composer{border-top:1px solid #eef2f6;background:#fff;padding:14px;display:grid;grid-template-columns:1fr auto;gap:10px}
-      .sipda-agent-input{min-height:46px;max-height:116px;resize:vertical;border:1px solid #d0d5dd;border-radius:16px;padding:12px 13px;font-family:Inter,Arial,sans-serif;font-size:13px;line-height:1.38;outline:none;background:#fff;color:#101828;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+      .sipda-agent-context{padding:14px 16px;border:1px solid #dbeafe;background:#eff6ff;color:#1e3a8a;border-radius:24px;font-size:12px;font-weight:650;line-height:1.5;box-shadow:0 6px 16px rgba(0,84,166,.04)}
+      .sipda-agent-composer{border-top:1px solid #eef2f6;background:#fff;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:10px}
+      .sipda-agent-input{min-height:48px;max-height:116px;resize:vertical;border:1px solid #d0d5dd;border-radius:22px;padding:13px 15px;font-family:Inter,Arial,sans-serif;font-size:13px;line-height:1.38;outline:none;background:#fff;color:#101828;box-shadow:0 1px 2px rgba(16,24,40,.04)}
       .sipda-agent-input:focus{border-color:#0054A6;box-shadow:0 0 0 4px rgba(0,84,166,.10)}
-      .sipda-agent-send{width:48px;height:46px;border-radius:16px;border:0;background:#101828;color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .15s ease,transform .15s ease,box-shadow .15s ease;box-shadow:0 8px 18px rgba(16,24,40,.16)}
+      .sipda-agent-send{width:50px;height:48px;border-radius:20px;border:0;background:#101828;color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .15s ease,transform .15s ease,box-shadow .15s ease;box-shadow:0 8px 18px rgba(16,24,40,.16)}
       .sipda-agent-send:hover{background:#0054A6;transform:translateY(-1px);box-shadow:0 12px 26px rgba(0,84,166,.24)}
-      .sipda-agent-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 16px 14px;background:#fff;color:#667085;font-size:11px;font-weight:650}
+      .sipda-agent-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 18px 16px;background:#fff;color:#667085;font-size:11px;font-weight:650}
       .sipda-agent-footer a{color:#0054A6;text-decoration:none;font-weight:800}
-      @media(max-width:760px){#sipdaGemFloatButton{right:14px;bottom:82px;min-width:54px;width:54px;padding:0;border-radius:18px}#sipdaGemFloatButton span{display:none}#sipdaGemPanel{top:auto;right:0;left:0;bottom:0;width:100%;height:88vh;border-radius:28px 28px 0 0;transform:translateY(calc(100% + 20px))}#sipdaGemPanel.open{transform:translateY(0)}.sipda-agent-msg{max-width:94%}.sipda-agent-head{padding:18px}.sipda-agent-toolbar{padding-left:14px}}
+      @media(max-width:760px){#sipdaGemFloatButton{right:0;bottom:86px;min-width:54px;width:56px;padding:0;border-radius:22px 0 0 22px}#sipdaGemFloatButton span{display:none}#sipdaGemPanel{top:auto;right:0;left:0;bottom:0;width:100%;height:88vh;border-radius:32px 32px 0 0;transform:translateY(calc(100% + 20px))}#sipdaGemPanel.open{transform:translateY(0)}.sipda-agent-msg{max-width:94%}.sipda-agent-head{padding:18px}.sipda-agent-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px}}
     `;
   }
 
@@ -110,7 +109,7 @@
       const panel=document.createElement('aside');panel.id='sipdaGemPanel';panel.setAttribute('aria-label','Agent SIPDA');
       panel.innerHTML=`
         <header class="sipda-agent-head"><div class="sipda-agent-title"><div class="sipda-agent-mark">AI</div><div><strong>Agent SIPDA</strong><span>Assistent operatiu integrat · context PL/ME</span></div></div><button id="sipdaGemClose" class="sipda-agent-close" type="button" aria-label="Tancar"><i data-lucide="x"></i></button></header>
-        <div class="sipda-agent-toolbar"><button class="sipda-agent-chip" data-prompt="Resumeix el risc operatiu actual en 5 punts de comandament.">Resum comandament</button><button class="sipda-agent-chip" data-prompt="Quines zones i franges presenten més risc en les pròximes 48 hores?">Zones i franges</button><button class="sipda-agent-chip" data-prompt="Quines accions preventives recomanes per al proper torn?">Accions preventives</button><button class="sipda-agent-chip" data-prompt="Detecta incongruències o buits de dades en els informes carregats.">Control qualitat</button></div>
+        <div class="sipda-agent-toolbar"><button class="sipda-agent-chip" data-prompt="Resumeix el risc operatiu actual en 5 punts de comandament.">Resum</button><button class="sipda-agent-chip" data-prompt="Quines zones i franges presenten més risc en les pròximes 48 hores?">Zones</button><button class="sipda-agent-chip" data-prompt="Quines accions preventives recomanes per al proper torn?">Accions</button><button class="sipda-agent-chip" data-prompt="Detecta incongruències o buits de dades en els informes carregats.">Control</button></div>
         <div id="sipdaAgentFeed" class="sipda-agent-feed"><div class="sipda-agent-context">Agent integrat dins de SIPDA. Treballa amb serveis normalitzats, informes carregats i context operatiu municipal. Experiència nativa, sense iframe.</div><div class="sipda-agent-msg ai"><small>Agent SIPDA</small>Preparat. Carrega informes i pregunta’m pel risc, patrons, zones, franges o dispositiu preventiu.</div></div>
         <div class="sipda-agent-composer"><textarea id="sipdaAgentInput" class="sipda-agent-input" placeholder="Pregunta a l'Agent SIPDA..."></textarea><button id="sipdaAgentSend" class="sipda-agent-send" type="button" aria-label="Enviar"><i data-lucide="send"></i></button></div>
         <div class="sipda-agent-footer"><span id="sipdaAgentStatus">Context: 0 serveis</span><a href="${GEM_URL}" target="_blank">Gem extern</a></div>`;
