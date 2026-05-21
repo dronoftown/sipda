@@ -2,7 +2,7 @@
 (function(){
   const CHAT_ENDPOINT='https://sipda.pages.dev/api/gemchat';
   const GEM_URL='https://gemini.google.com/gem/1ZSBFOLRtKOOWgVvL7PbUTkqmEVp7zCN1?usp=sharing';
-  const BUILD='sipda-v7-native-agent-ui-rounded-bluechips-2026-05-22';
+  const BUILD='sipda-v7-native-agent-force-rounded-ui-2026-05-22';
   const history=[];
 
   function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -19,86 +19,48 @@
     css.textContent=`
       .is-locked #sipdaGemFloatButton{display:none!important}
       #sipdaGemFloatButton{
-        position:fixed;
-        right:0;
-        bottom:104px;
-        z-index:9990;
-        min-width:158px;
-        height:48px;
-        border:1px solid #101828;
-        background:#101828;
-        color:#fff;
-        border-radius:24px 0 0 24px;
-        box-shadow:0 18px 44px rgba(16,24,40,.24);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:9px;
-        padding:0 18px 0 16px;
-        font-family:Inter,Arial,sans-serif;
-        font-size:12px;
-        font-weight:850;
-        letter-spacing:-.01em;
-        cursor:pointer;
-        transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+        position:fixed!important;right:0!important;bottom:104px!important;z-index:9990!important;min-width:158px!important;height:48px!important;
+        border:1px solid #101828!important;background:#101828!important;color:#fff!important;border-radius:24px 0 0 24px!important;
+        box-shadow:0 18px 44px rgba(16,24,40,.24)!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;
+        padding:0 18px 0 16px!important;font-family:Inter,Arial,sans-serif!important;font-size:12px!important;font-weight:850!important;letter-spacing:-.01em!important;cursor:pointer!important;
+        transition:transform .18s ease,box-shadow .18s ease,background .18s ease!important;
       }
-      #sipdaGemFloatButton:hover{transform:translateX(-3px);background:#0054A6;border-color:#0054A6;box-shadow:0 22px 54px rgba(0,84,166,.30)}
-      #sipdaGemFloatButton svg{width:17px;height:17px;stroke:#fff;stroke-width:2.45}
-      #sipdaGemPanelBackdrop{position:fixed;inset:0;z-index:9991;background:rgba(15,23,42,.18);backdrop-filter:blur(10px);display:none}
-      #sipdaGemPanelBackdrop.open{display:block}
+      #sipdaGemFloatButton:hover{transform:translateX(-3px)!important;background:#0054A6!important;border-color:#0054A6!important;box-shadow:0 22px 54px rgba(0,84,166,.30)!important}
+      #sipdaGemFloatButton svg{width:17px!important;height:17px!important;stroke:#fff!important;stroke-width:2.45!important}
+      #sipdaGemPanelBackdrop{position:fixed!important;inset:0!important;z-index:9991!important;background:rgba(15,23,42,.18)!important;backdrop-filter:blur(10px)!important;display:none!important}
+      #sipdaGemPanelBackdrop.open{display:block!important}
       #sipdaGemPanel{
-        position:fixed;
-        top:18px;
-        right:18px;
-        bottom:18px;
-        width:min(640px,calc(100vw - 28px));
-        z-index:9992;
-        background:#fff;
-        border:1px solid #e5e7eb;
-        border-radius:32px;
-        box-shadow:0 30px 90px rgba(16,24,40,.20),0 0 0 1px rgba(255,255,255,.92) inset;
-        overflow:hidden;
-        transform:translateX(calc(100% + 30px));
-        transition:transform .28s cubic-bezier(.2,.8,.2,1);
-        display:flex;
-        flex-direction:column;
-        font-family:Inter,Arial,sans-serif;
+        position:fixed!important;top:18px!important;right:18px!important;bottom:18px!important;width:min(640px,calc(100vw - 28px))!important;z-index:9992!important;
+        background:#fff!important;border:1px solid #e5e7eb!important;border-radius:34px!important;box-shadow:0 30px 90px rgba(16,24,40,.20),0 0 0 1px rgba(255,255,255,.92) inset!important;
+        overflow:hidden!important;transform:translateX(calc(100% + 30px))!important;transition:transform .28s cubic-bezier(.2,.8,.2,1)!important;display:flex!important;flex-direction:column!important;font-family:Inter,Arial,sans-serif!important;
       }
-      #sipdaGemPanel.open{transform:translateX(0)}
-      .sipda-agent-head{
-        min-height:88px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:16px;
-        padding:20px 22px 18px 22px;
-        border-bottom:1px solid #eef2f6;
-        background:linear-gradient(180deg,#fff 0%,#fbfcff 100%);
-      }
-      .sipda-agent-title{display:flex;align-items:center;gap:13px;min-width:0}
-      .sipda-agent-mark{width:46px;height:46px;border-radius:18px;background:#101828;color:#fff;display:grid;place-items:center;font-weight:900;font-size:12px;letter-spacing:.02em;box-shadow:0 12px 26px rgba(16,24,40,.18)}
-      .sipda-agent-title strong{display:block;font-size:17px;letter-spacing:-.035em;color:#101828;line-height:1.05}
-      .sipda-agent-title span{display:block;margin-top:5px;font-size:12px;color:#667085;font-weight:650;letter-spacing:-.01em}
-      .sipda-agent-close{width:42px;height:42px;border-radius:16px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;cursor:pointer;color:#344054;transition:background .15s ease,border-color .15s ease,transform .15s ease}
-      .sipda-agent-close:hover{background:#f8fafc;border-color:#d0d5dd;transform:translateY(-1px)}
-      .sipda-agent-toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px 16px;border-bottom:1px solid #eef2f6;background:#fff}
-      .sipda-agent-chip{border:1px solid #0054A6;background:#0054A6;color:#fff;border-radius:18px;padding:11px 10px;font-size:11px;font-weight:850;white-space:normal;line-height:1.18;cursor:pointer;box-shadow:0 10px 22px rgba(0,84,166,.18);transition:background .15s ease,border-color .15s ease,transform .15s ease,box-shadow .15s ease}
-      .sipda-agent-chip:hover{background:#003f7d;border-color:#003f7d;transform:translateY(-1px);box-shadow:0 14px 28px rgba(0,84,166,.26)}
-      .sipda-agent-feed{flex:1;min-height:0;overflow:auto;padding:18px;background:linear-gradient(180deg,#f8fafc 0%,#f6f8fb 100%);display:flex;flex-direction:column;gap:14px}
-      .sipda-agent-msg{max-width:89%;border:1px solid #e5e7eb;border-radius:24px;padding:14px 16px;font-size:13px;line-height:1.55;box-shadow:0 10px 26px rgba(16,24,40,.045);white-space:pre-wrap;letter-spacing:-.005em}
-      .sipda-agent-msg.user{align-self:flex-end;background:#0054A6;color:#fff;border-color:#0054A6;border-radius:24px 24px 8px 24px;box-shadow:0 12px 28px rgba(0,84,166,.22)}
-      .sipda-agent-msg.ai{align-self:flex-start;background:#fff;color:#101828;border-radius:24px 24px 24px 8px}
-      .sipda-agent-msg small{display:block;margin-bottom:6px;font-size:10px;text-transform:uppercase;letter-spacing:.075em;font-weight:850;opacity:.55}
-      .sipda-agent-msg.thinking{color:#667085;font-weight:650;background:#fff}
-      .sipda-agent-context{padding:14px 16px;border:1px solid #dbeafe;background:#eff6ff;color:#1e3a8a;border-radius:24px;font-size:12px;font-weight:650;line-height:1.5;box-shadow:0 6px 16px rgba(0,84,166,.04)}
-      .sipda-agent-composer{border-top:1px solid #eef2f6;background:#fff;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:10px}
-      .sipda-agent-input{min-height:48px;max-height:116px;resize:vertical;border:1px solid #d0d5dd;border-radius:22px;padding:13px 15px;font-family:Inter,Arial,sans-serif;font-size:13px;line-height:1.38;outline:none;background:#fff;color:#101828;box-shadow:0 1px 2px rgba(16,24,40,.04)}
-      .sipda-agent-input:focus{border-color:#0054A6;box-shadow:0 0 0 4px rgba(0,84,166,.10)}
-      .sipda-agent-send{width:50px;height:48px;border-radius:20px;border:0;background:#101828;color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .15s ease,transform .15s ease,box-shadow .15s ease;box-shadow:0 8px 18px rgba(16,24,40,.16)}
-      .sipda-agent-send:hover{background:#0054A6;transform:translateY(-1px);box-shadow:0 12px 26px rgba(0,84,166,.24)}
-      .sipda-agent-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 18px 16px;background:#fff;color:#667085;font-size:11px;font-weight:650}
-      .sipda-agent-footer a{color:#0054A6;text-decoration:none;font-weight:800}
-      @media(max-width:760px){#sipdaGemFloatButton{right:0;bottom:86px;min-width:54px;width:56px;padding:0;border-radius:22px 0 0 22px}#sipdaGemFloatButton span{display:none}#sipdaGemPanel{top:auto;right:0;left:0;bottom:0;width:100%;height:88vh;border-radius:32px 32px 0 0;transform:translateY(calc(100% + 20px))}#sipdaGemPanel.open{transform:translateY(0)}.sipda-agent-msg{max-width:94%}.sipda-agent-head{padding:18px}.sipda-agent-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px}}
+      #sipdaGemPanel.open{transform:translateX(0)!important}
+      #sipdaGemPanel *{box-sizing:border-box!important}
+      .sipda-agent-head{min-height:88px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;padding:20px 22px 18px 22px!important;border-bottom:1px solid #eef2f6!important;background:linear-gradient(180deg,#fff 0%,#fbfcff 100%)!important;border-radius:34px 34px 0 0!important}
+      .sipda-agent-title{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important}
+      .sipda-agent-mark{width:46px!important;height:46px!important;border-radius:18px!important;background:#101828!important;color:#fff!important;display:grid!important;place-items:center!important;font-weight:900!important;font-size:12px!important;letter-spacing:.02em!important;box-shadow:0 12px 26px rgba(16,24,40,.18)!important}
+      .sipda-agent-title strong{display:block!important;font-size:17px!important;letter-spacing:-.035em!important;color:#101828!important;line-height:1.05!important}
+      .sipda-agent-title span{display:block!important;margin-top:5px!important;font-size:12px!important;color:#667085!important;font-weight:650!important;letter-spacing:-.01em!important}
+      .sipda-agent-close{width:42px!important;height:42px!important;border-radius:18px!important;border:1px solid #e5e7eb!important;background:#fff!important;display:grid!important;place-items:center!important;cursor:pointer!important;color:#344054!important;transition:background .15s ease,border-color .15s ease,transform .15s ease!important}
+      .sipda-agent-close:hover{background:#f8fafc!important;border-color:#d0d5dd!important;transform:translateY(-1px)!important}
+      .sipda-agent-toolbar{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important;padding:14px 16px!important;border-bottom:1px solid #eef2f6!important;background:#fff!important;border-radius:0!important}
+      .sipda-agent-chip{border:1px solid #0054A6!important;background:#0054A6!important;color:#fff!important;border-radius:18px!important;padding:11px 10px!important;font-size:11px!important;font-weight:850!important;white-space:normal!important;line-height:1.18!important;cursor:pointer!important;box-shadow:0 10px 22px rgba(0,84,166,.18)!important;transition:background .15s ease,border-color .15s ease,transform .15s ease,box-shadow .15s ease!important}
+      .sipda-agent-chip:hover{background:#003f7d!important;border-color:#003f7d!important;color:#fff!important;transform:translateY(-1px)!important;box-shadow:0 14px 28px rgba(0,84,166,.26)!important}
+      .sipda-agent-feed{flex:1!important;min-height:0!important;overflow:auto!important;padding:18px!important;background:linear-gradient(180deg,#f8fafc 0%,#f6f8fb 100%)!important;display:flex!important;flex-direction:column!important;gap:14px!important;border-radius:0 0 26px 26px!important}
+      .sipda-agent-msg{max-width:89%!important;border:1px solid #e5e7eb!important;border-radius:26px!important;padding:14px 16px!important;font-size:13px!important;line-height:1.55!important;box-shadow:0 10px 26px rgba(16,24,40,.045)!important;white-space:pre-wrap!important;letter-spacing:-.005em!important;overflow:hidden!important}
+      .sipda-agent-msg.user{align-self:flex-end!important;background:#0054A6!important;color:#fff!important;border-color:#0054A6!important;border-radius:26px 26px 8px 26px!important;box-shadow:0 12px 28px rgba(0,84,166,.22)!important}
+      .sipda-agent-msg.ai{align-self:flex-start!important;background:#fff!important;color:#101828!important;border-radius:26px 26px 26px 8px!important}
+      .sipda-agent-msg small{display:block!important;margin-bottom:6px!important;font-size:10px!important;text-transform:uppercase!important;letter-spacing:.075em!important;font-weight:850!important;opacity:.55!important}
+      .sipda-agent-msg.thinking{color:#667085!important;font-weight:650!important;background:#fff!important;border-radius:26px!important}
+      .sipda-agent-context{padding:14px 16px!important;border:1px solid #dbeafe!important;background:#eff6ff!important;color:#1e3a8a!important;border-radius:26px!important;font-size:12px!important;font-weight:650!important;line-height:1.5!important;box-shadow:0 6px 16px rgba(0,84,166,.04)!important;overflow:hidden!important}
+      .sipda-agent-composer{border-top:1px solid #eef2f6!important;background:#fff!important;padding:14px 16px!important;display:grid!important;grid-template-columns:1fr auto!important;gap:10px!important;border-radius:0!important}
+      .sipda-agent-input{min-height:48px!important;max-height:116px!important;resize:vertical!important;border:1px solid #d0d5dd!important;border-radius:24px!important;padding:13px 15px!important;font-family:Inter,Arial,sans-serif!important;font-size:13px!important;line-height:1.38!important;outline:none!important;background:#fff!important;color:#101828!important;box-shadow:0 1px 2px rgba(16,24,40,.04)!important}
+      .sipda-agent-input:focus{border-color:#0054A6!important;box-shadow:0 0 0 4px rgba(0,84,166,.10)!important}
+      .sipda-agent-send{width:50px!important;height:48px!important;border-radius:22px!important;border:0!important;background:#101828!important;color:#fff!important;display:grid!important;place-items:center!important;cursor:pointer!important;transition:background .15s ease,transform .15s ease,box-shadow .15s ease!important;box-shadow:0 8px 18px rgba(16,24,40,.16)!important}
+      .sipda-agent-send:hover{background:#0054A6!important;transform:translateY(-1px)!important;box-shadow:0 12px 26px rgba(0,84,166,.24)!important}
+      .sipda-agent-footer{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:10px!important;padding:0 18px 16px!important;background:#fff!important;color:#667085!important;font-size:11px!important;font-weight:650!important;border-radius:0 0 34px 34px!important}
+      .sipda-agent-footer a{color:#0054A6!important;text-decoration:none!important;font-weight:800!important}
+      @media(max-width:760px){#sipdaGemFloatButton{right:0!important;bottom:86px!important;min-width:54px!important;width:56px!important;padding:0!important;border-radius:22px 0 0 22px!important}#sipdaGemFloatButton span{display:none!important}#sipdaGemPanel{top:auto!important;right:0!important;left:0!important;bottom:0!important;width:100%!important;height:88vh!important;border-radius:34px 34px 0 0!important;transform:translateY(calc(100% + 20px))!important}#sipdaGemPanel.open{transform:translateY(0)!important}.sipda-agent-msg{max-width:94%!important}.sipda-agent-head{padding:18px!important}.sipda-agent-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:14px!important}}
     `;
   }
 
