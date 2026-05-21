@@ -9,41 +9,137 @@ function reply(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers });
 }
 
+function safeText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function jsonText(value) {
+  return String(value || "{}")
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+}
+
+function buildPrompt(informePoliciaLocal, informeMossos) {
+  return `Ets SIPDA, un sistema d'intel·ligència policial municipal.
+
+Analitza les novetats carregades i genera una predicció operativa real per a les properes 48 hores.
+
+Normes obligatòries:
+- Escriu sempre en català.
+- No repeteixis només el que ja ha passat.
+- Has de predir riscos probables a partir dels patrons detectats.
+- No limitis artificialment el nombre de resultats.
+- Si hi ha molts riscos alts, retorna'ls tots.
+- No inventis dades sense base documental.
+- Tracta Policia Local i Mossos com dues fonts policials equivalents.
+- Retorna només JSON vàlid.
+
+Format obligatori:
+{
+  "resumExecutiu": "",
+  "prediccio48h": [
+    {
+      "risc": "",
+      "zona": "",
+      "franja": "",
+      "prioritat": "Alta | Mitjana | Baixa",
+      "probabilitat": "",
+      "impacte": "",
+      "baseDocumental": "",
+      "prediccio": "",
+      "accioPreventiva": ""
+    }
+  ],
+  "patronsDetectats": [],
+  "recomanacioComandament": ""
+}
+
+INFORME POLICIA LOCAL:
+${informePoliciaLocal || "No aportat"}
+
+INFORME MOSSOS:
+${informeMossos || "No aportat"}`;
+}
+
 export async function onRequest(context) {
-  const { request } = context;
+  const { request, env } = context;
 
   if (request.method === "OPTIONS") return new Response(null, { headers });
   if (request.method !== "POST") return reply({ error: "Use POST" }, 405);
 
+  if (!env.SIPDA_UPSTREAM_URL || !env.SIPDA_UPSTREAM_KEY) {
+    return reply({
+      error: "Falten secrets de Cloudflare",
+      missing: [
+        !env.SIPDA_UPSTREAM_URL ? "SIPDA_UPSTREAM_URL" : null,
+        !env.SIPDA_UPSTREAM_KEY ? "SIPDA_UPSTREAM_KEY" : null
+      ].filter(Boolean)
+    }, 500);
+  }
+
   try {
     const body = await request.json();
-    const informePoliciaLocal = body.informePoliciaLocal || "";
-    const informeMossos = body.informeMossos || "";
+    const informePoliciaLocal = safeText(body.informePoliciaLocal);
+    const informeMossos = safeText(body.informeMossos);
 
     if (!informePoliciaLocal && !informeMossos) {
       return reply({ error: "No reports received" }, 400);
     }
 
-    return reply({
-      motor: "SIPDA demo endpoint",
-      model: "pending-gemini-secret",
-      generatA: new Date().toISOString(),
-      resumExecutiu: "Endpoint intern preparat. Falta activar la crida segura a Gemini des de Cloudflare.",
-      prediccio48h: [
-        {
-          risc: "Validacio tecnica",
-          zona: "Sistema SIPDA",
-          franja: "Prova immediata",
-          prioritat: "Mitjana",
-          probabilitat: "Alta",
-          impacte: "Permet validar que Cloudflare Pages Functions respon correctament",
-          baseDocumental: "S'han rebut informes al cos de la peticio",
-          prediccio: "El circuit frontend endpoint resposta JSON queda validat",
-          accioPreventiva: "Configurar GEMINI_API_KEY com a secret i substituir aquest stub per la crida a Gemini"
+    const prompt = buildPrompt(informePoliciaLocal, informeMossos);
+    const headerName = env.SIPDA_UPSTREAM_KEY_HEADER || "X-goog-api-key";
+
+    const upstreamResponse = await fetch(env.SIPDA_UPSTREAM_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [headerName]: env.SIPDA_UPSTREAM_KEY
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 8192,
+          responseMimeType: "application/json"
         }
-      ],
-      patronsDetectats: ["Endpoint HTTP actiu", "Resposta JSON valida", "CORS habilitat"],
-      recomanacioComandament: "Validar /api/health i /api/prediccio48h abans d'activar Gemini."
+      })
+    });
+
+    const upstreamData = await upstreamResponse.json();
+
+    if (!upstreamResponse.ok) {
+      return reply({
+        error: "Error del motor IA",
+        status: upstreamResponse.status,
+        details: upstreamData
+      }, 502);
+    }
+
+    const raw = upstreamData?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+    let parsed;
+
+    try {
+      parsed = JSON.parse(jsonText(raw));
+    } catch (error) {
+      return reply({
+        error: "El motor IA no ha retornat JSON vàlid",
+        raw
+      }, 502);
+    }
+
+    return reply({
+      motor: "SIPDA IA",
+      model: env.SIPDA_MODEL || "gemini",
+      generatA: new Date().toISOString(),
+      ...parsed
     });
   } catch (error) {
     return reply({ error: "Prediction endpoint failed", detail: error.message }, 500);
