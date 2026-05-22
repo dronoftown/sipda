@@ -1,6 +1,6 @@
 /* SIPDA v7 · carregador del modul IA natiu */
 (function(){
-  const BUILD='sipda-v7-ia-loader-agent-actions-2026-05-22';
+  const BUILD='sipda-v7-ia-loader-gem-bridge-2026-05-22';
   function loadScriptOnce(id,src){
     if(document.getElementById(id)) return;
     const script=document.createElement('script');
@@ -14,7 +14,8 @@
     loadScriptOnce('sipda-v7-endpoint-bridge-loader','./assets/js/sipda-v7-prediccio-endpoint-bridge.js');
     loadScriptOnce('sipda-v7-assistant-panel-loader','./assets/js/sipda-v7-assistant-panel-loader.js');
     loadScriptOnce('sipda-v7-agent-actions-loader','./assets/js/sipda-v7-agent-actions.js');
-    window.SIPDA_IA_LOADER={build:BUILD,loaded:true,endpointBridge:true,assistantPanel:true,agentActions:true};
+    loadScriptOnce('sipda-v7-gem-bridge-loader','./assets/js/sipda-v7-gem-bridge.js');
+    window.SIPDA_IA_LOADER={build:BUILD,loaded:true,endpointBridge:true,assistantPanel:true,agentActions:true,gemBridge:true};
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadLivePrediction);
   else loadLivePrediction();
