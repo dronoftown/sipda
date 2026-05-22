@@ -24,11 +24,10 @@
       'TEXT BRUT DISPONIBLE:\n'+clean(window.SIPDA_LAST_PDF_TEXT||'').slice(0,12000);
   }
   function sidePanelGeometry(){
-    var w=Math.min(460,Math.max(400,Math.round(screen.availWidth*0.26)));
-    var h=Math.max(720,screen.availHeight-28);
-    h=Math.min(h,screen.availHeight);
-    var left=Math.max(0,screen.availLeft!==undefined?screen.availLeft+screen.availWidth-w-12:screen.availWidth-w-12);
-    var top=Math.max(0,screen.availTop!==undefined?screen.availTop+10:10);
+    var w=440;
+    var h=screen.availHeight || window.innerHeight || 860;
+    var left=screen.availLeft!==undefined?screen.availLeft:0;
+    var top=screen.availTop!==undefined?screen.availTop:0;
     return {w:w,h:h,left:left,top:top};
   }
   function openControlledGemWindow(){
@@ -89,7 +88,7 @@
         footer.appendChild(b);
       }
     }
-    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'floating-direct-narrow-sidepanel'};
+    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'floating-direct-left-fixed-panel'};
   }
   function tick(){mount();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){tick();setInterval(tick,800);});else{tick();setInterval(tick,800);}
