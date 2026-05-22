@@ -5,7 +5,7 @@ const headers = {
   "Content-Type": "application/json; charset=utf-8"
 };
 
-const CF_MODEL = "@cf/meta/llama-3.1-8b-instruct";
+const CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent";
 const GROQ_MODEL = "llama-3.1-8b-instant";
