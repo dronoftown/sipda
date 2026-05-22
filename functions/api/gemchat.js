@@ -5,6 +5,7 @@ const headers = {
   "Content-Type": "application/json; charset=utf-8"
 };
 
+const CF_MODEL = "@cf/meta/llama-3.1-8b-instruct";
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent";
 const GROQ_MODEL = "llama-3.1-8b-instant";
@@ -58,28 +59,32 @@ function detectMode(message) {
 
 function getConfig(env) {
   return {
+    cloudflareReady: Boolean(env.AI),
+    cloudflareModel: env.SIPDA_CF_MODEL || CF_MODEL,
     geminiKey: env.GEMINI_API_KEY || env.SIPDA_UPSTREAM_KEY || "",
     geminiModel: env.SIPDA_GEMINI_MODEL || env.SIPDA_MODEL || GEMINI_MODEL,
     geminiUrl: env.SIPDA_UPSTREAM_URL || GEMINI_URL,
     groqKey: env.GROQ_API_KEY || "",
     groqModel: env.SIPDA_GROQ_MODEL || GROQ_MODEL,
     groqUrl: env.SIPDA_GROQ_URL || GROQ_URL,
-    providerOrder: clean(env.SIPDA_AI_PROVIDER_ORDER || "gemini,groq", 200).split(",").map(x => clean(x).toLowerCase()).filter(Boolean)
+    providerOrder: clean(env.SIPDA_AI_PROVIDER_ORDER || "cloudflare,gemini,groq", 200).split(",").map(x => clean(x).toLowerCase()).filter(Boolean)
   };
 }
 
 function configStatus(env) {
   const cfg = getConfig(env);
   return {
-    ok: Boolean(cfg.geminiKey || cfg.groqKey),
+    ok: Boolean(cfg.cloudflareReady || cfg.geminiKey || cfg.groqKey),
     service: "sipda-gemchat",
     mode: "multi-provider-ai",
     providers: {
+      cloudflare: cfg.cloudflareReady,
       gemini: Boolean(cfg.geminiKey),
       groq: Boolean(cfg.groqKey)
     },
     order: cfg.providerOrder,
     models: {
+      cloudflare: cfg.cloudflareModel,
       gemini: cfg.geminiModel,
       groq: cfg.groqModel
     },
@@ -89,12 +94,12 @@ function configStatus(env) {
 }
 
 function buildPrompt({ message, history, context, attachment }) {
-  const services = Array.isArray(context?.services) ? context.services.slice(0, 120) : [];
-  const predictions = Array.isArray(context?.predictionRows) ? context.predictionRows.slice(0, 60) : [];
-  const rawContext = clean(context?.rawText || "", 12000);
-  const hist = Array.isArray(history) ? history.slice(-8) : [];
+  const services = Array.isArray(context?.services) ? context.services.slice(0, 80) : [];
+  const predictions = Array.isArray(context?.predictionRows) ? context.predictionRows.slice(0, 40) : [];
+  const rawContext = clean(context?.rawText || "", 9000);
+  const hist = Array.isArray(history) ? history.slice(-6) : [];
   const desiredMode = detectMode(message);
-  const attachmentText = clean(attachment?.text || "", 12000);
+  const attachmentText = clean(attachment?.text || "", 9000);
   const attachmentMeta = attachment?.name ? JSON.stringify({
     name: attachment.name,
     type: attachment.type || "unknown",
@@ -147,8 +152,17 @@ HISTORIAL:
 ${JSON.stringify(hist, null, 2)}
 
 PREGUNTA:
-${clean(message, 5000)}
+${clean(message, 4000)}
 `;
+}
+
+async function callCloudflare(env, cfg, prompt) {
+  if (!env.AI) throw new Error("Cloudflare AI binding missing");
+  const response = await env.AI.run(cfg.cloudflareModel, {
+    prompt,
+    max_tokens: 4096
+  });
+  return response?.response || response?.result?.response || response?.text || JSON.stringify(response || {});
 }
 
 async function callGemini(cfg, prompt, attachment) {
@@ -213,7 +227,8 @@ async function callGroq(cfg, prompt) {
 }
 
 function isQuotaError(error) {
-  return error?.status === 429 || JSON.stringify(error?.details || {}).toLowerCase().includes("quota") || JSON.stringify(error?.details || {}).toLowerCase().includes("rate");
+  const details = JSON.stringify(error?.details || {}).toLowerCase();
+  return error?.status === 429 || details.includes("quota") || details.includes("rate") || details.includes("limit");
 }
 
 export async function onRequest(context) {
@@ -224,10 +239,10 @@ export async function onRequest(context) {
   if (request.method === "GET") return reply(configStatus(env));
   if (request.method !== "POST") return reply({ error: "Use POST" }, 405);
 
-  if (!cfg.geminiKey && !cfg.groqKey) {
+  if (!cfg.cloudflareReady && !cfg.geminiKey && !cfg.groqKey) {
     return reply({
-      error: "Falta configurar almenys una IA gratuïta",
-      needed: ["GEMINI_API_KEY o GROQ_API_KEY"],
+      error: "Falta configurar almenys una IA",
+      needed: ["Binding AI de Cloudflare o GEMINI_API_KEY o GROQ_API_KEY"],
       config: configStatus(env)
     }, 500);
   }
@@ -244,13 +259,14 @@ export async function onRequest(context) {
     for (const provider of cfg.providerOrder) {
       try {
         let raw;
-        if (provider === "gemini") raw = await callGemini(cfg, prompt, attachment);
+        if (provider === "cloudflare") raw = await callCloudflare(env, cfg, prompt);
+        else if (provider === "gemini") raw = await callGemini(cfg, prompt, attachment);
         else if (provider === "groq") raw = await callGroq(cfg, prompt);
         else continue;
         const structured = parseStructured(raw);
         return reply({
-          motor: provider === "gemini" ? "Agent SIPDA · Gemini" : "Agent SIPDA · Groq",
-          model: provider === "gemini" ? cfg.geminiModel : cfg.groqModel,
+          motor: provider === "cloudflare" ? "Agent SIPDA · Cloudflare AI" : provider === "gemini" ? "Agent SIPDA · Gemini" : "Agent SIPDA · Groq",
+          model: provider === "cloudflare" ? cfg.cloudflareModel : provider === "gemini" ? cfg.geminiModel : cfg.groqModel,
           provider,
           generatedAt: new Date().toISOString(),
           ...structured
@@ -264,7 +280,7 @@ export async function onRequest(context) {
     return reply({
       error: "Totes les IA configurades han fallat o han arribat al límit",
       errors,
-      recommendation: "Afegeix GROQ_API_KEY com a secret gratuït a Cloudflare o espera el reinici de quota.",
+      recommendation: "Activa el binding AI de Cloudflare a Pages o espera el reinici de quota.",
       config: configStatus(env)
     }, 503);
   } catch (error) {
