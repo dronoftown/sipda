@@ -1,6 +1,7 @@
 /* SIPDA v7 · Gemini Gem bridge */
 (function(){
   var GEM_URL='https://gemini.google.com/gem/1ZSBFOLRtKOOWgVvL7PbUTkqmEVp7zCN1?usp=sharing';
+  var gemWindow=null;
   function clean(v){return String(v||'').replace(/\s+/g,' ').trim();}
   function services(){try{if(window.DATA&&Array.isArray(window.DATA.services))return window.DATA.services;}catch(e){}try{return JSON.parse(localStorage.getItem('sipda.v7.history.datasets')||'[]').flatMap(function(x){return ((x.dataset||x).services)||[];});}catch(e){return[];}}
   function buildPrompt(){
@@ -22,17 +23,22 @@
       'SERVEIS NORMALITZATS:\n'+JSON.stringify(rows,null,2)+'\n\n'+
       'TEXT BRUT DISPONIBLE:\n'+clean(window.SIPDA_LAST_PDF_TEXT||'').slice(0,12000);
   }
+  function sidePanelGeometry(){
+    var w=Math.min(620,Math.max(520,Math.round(screen.availWidth*0.34)));
+    var h=Math.max(720,screen.availHeight-28);
+    h=Math.min(h,screen.availHeight);
+    var left=Math.max(0,screen.availLeft!==undefined?screen.availLeft+screen.availWidth-w-12:screen.availWidth-w-12);
+    var top=Math.max(0,screen.availTop!==undefined?screen.availTop+10:10);
+    return {w:w,h:h,left:left,top:top};
+  }
   function openControlledGemWindow(){
-    var w=Math.min(1120,Math.max(920,screen.availWidth-120));
-    var h=Math.min(860,Math.max(720,screen.availHeight-90));
-    var left=Math.max(0,Math.round((screen.availWidth-w)/2));
-    var top=Math.max(0,Math.round((screen.availHeight-h)/2));
+    var g=sidePanelGeometry();
     var features=[
       'popup=yes',
-      'width='+w,
-      'height='+h,
-      'left='+left,
-      'top='+top,
+      'width='+g.w,
+      'height='+g.h,
+      'left='+g.left,
+      'top='+g.top,
       'menubar=no',
       'toolbar=no',
       'location=no',
@@ -40,9 +46,12 @@
       'scrollbars=yes',
       'resizable=yes'
     ].join(',');
-    var win=window.open(GEM_URL,'sipda_gem_window',features);
-    if(!win)win=window.open(GEM_URL,'_blank');
-    try{if(win)win.focus();}catch(e){}
+    if(gemWindow && !gemWindow.closed){
+      try{gemWindow.focus();gemWindow.moveTo(g.left,g.top);gemWindow.resizeTo(g.w,g.h);return;}catch(e){}
+    }
+    gemWindow=window.open(GEM_URL,'sipda_gem_sidepanel',features);
+    if(!gemWindow)gemWindow=window.open(GEM_URL,'_blank');
+    try{if(gemWindow){gemWindow.focus();gemWindow.moveTo(g.left,g.top);gemWindow.resizeTo(g.w,g.h);}}catch(e){}
   }
   async function openGem(){
     var prompt=buildPrompt();
@@ -80,7 +89,7 @@
         footer.appendChild(b);
       }
     }
-    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'floating-direct-popup'};
+    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'floating-direct-sidepanel'};
   }
   function tick(){mount();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){tick();setInterval(tick,800);});else{tick();setInterval(tick,800);}
