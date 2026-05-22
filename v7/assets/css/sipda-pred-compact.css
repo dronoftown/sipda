@@ -1,0 +1,8 @@
+#sipdaPrediction48Modal .modal-card{max-height:92vh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;width:min(1180px,94vw)!important}
+#sipdaPrediction48Modal .modal-head{flex:0 0 auto!important;padding:14px 18px!important}
+#sipdaPrediction48Modal .modal-body{flex:1 1 auto!important;min-height:0!important;overflow:auto!important;padding:0!important}
+#sipdaPrediction48Modal .modal-actions{flex:0 0 auto!important;padding:10px 14px!important}
+#sipdaPrediction48Modal .sipda-pred-shell{padding:14px!important;zoom:.86!important}
+#sipdaPrediction48Modal .sipda-pred-table-wrap{max-height:55vh!important;overflow:auto!important}
+#sipdaPrediction48Modal .sipda-pred-table{min-width:1120px!important}
+@media(max-width:760px){#sipdaPrediction48Modal .modal-card{width:100vw!important;max-height:92vh!important}.sipda-pred-shell{zoom:.82!important}}
