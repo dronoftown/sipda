@@ -42,7 +42,7 @@ function configStatus(env) {
   return {
     ok: Boolean(cfg.cloudflareReady || cfg.geminiKey || cfg.groqKey),
     service: "sipda-prediccio48h",
-    mode: "multi-provider-ai",
+    mode: "multi-provider-ai-robust",
     providers: {
       cloudflare: cfg.cloudflareReady,
       gemini: Boolean(cfg.geminiKey),
@@ -74,6 +74,28 @@ function firstJsonObject(text) {
   return s;
 }
 
+function textFallback(raw) {
+  const text = clean(raw, 2400);
+  return {
+    resumExecutiu: text || "La IA ha generat una lectura operativa sense estructura JSON completa.",
+    prediccio48h: [
+      {
+        risc: "Lectura operativa pendent d'estructurar",
+        zona: "Segons novetats carregades",
+        franja: "Properes 24/48 h",
+        prioritat: "Mitjana",
+        probabilitat: "Mitjana",
+        impacte: "Mitjà",
+        baseDocumental: "Resposta generada per IA a partir del context SIPDA carregat.",
+        prediccio: text.slice(0, 280) || "Cal revisar el contingut de les novetats i validar patrons operatius.",
+        accioPreventiva: "Validar manualment la lectura i reforçar vigilància en zones amb serveis recurrents."
+      }
+    ],
+    patronsDetectats: text ? [text.slice(0, 220)] : ["La IA ha retornat resposta no estructurada."],
+    recomanacioComandament: "La predicció s'ha recuperat en mode robust perquè el motor IA no ha retornat JSON pur. Revisar la fila generada i repetir si cal."
+  };
+}
+
 function parseAiJson(raw) {
   const variants = [stripFence(raw), firstJsonObject(raw)];
   for (const item of variants) {
@@ -84,7 +106,7 @@ function parseAiJson(raw) {
       return parsed;
     } catch (_) {}
   }
-  throw new Error("INVALID_JSON");
+  return textFallback(raw);
 }
 
 function normalizePrediction(parsed) {
@@ -93,22 +115,26 @@ function normalizePrediction(parsed) {
   if (!Array.isArray(parsed.patronsDetectats)) parsed.patronsDetectats = [];
   if (!parsed.resumExecutiu) parsed.resumExecutiu = "Predicció operativa generada amb les novetats carregades.";
   if (!parsed.recomanacioComandament) parsed.recomanacioComandament = "Revisar les files de predicció i ajustar el dispositiu preventiu segons prioritat i zona.";
+  if (!parsed.prediccio48h.length) parsed = textFallback(parsed.resumExecutiu);
   return parsed;
 }
 
 function buildPrompt(informePoliciaLocal, informeMossos, serveisNormalitzats) {
-  const serveis = Array.isArray(serveisNormalitzats) ? serveisNormalitzats.slice(0, 120) : [];
+  const serveis = Array.isArray(serveisNormalitzats) ? serveisNormalitzats.slice(0, 80) : [];
   return `Ets SIPDA, sistema d'intel·ligència policial municipal.
 
 Objectiu: generar una predicció operativa real de les properes 48 hores a partir de les novetats carregades.
 
+IMPORTANT:
+Retorna nomes JSON valid. No escriguis cap introduccio, cap markdown, cap explicacio fora del JSON.
+
 Regles:
 - Escriu només en català.
-- No expliquis només el que ja ha passat: projecta riscos probables.
+- Projecta riscos probables, no et limitis a descriure el passat.
 - No inventis dades sense base documental.
-- No limitis artificialment els riscos importants, però escriu cada fila de forma breu i operativa.
+- Cada fila ha de ser breu, accionable i útil per comandament.
 - Policia Local i Mossos tenen valor equivalent.
-- Retorna NOMÉS JSON vàlid, sense markdown.
+- Si hi ha diversos riscos al context, genera diverses files.
 
 JSON obligatori:
 {
@@ -134,16 +160,20 @@ SERVEIS NORMALITZATS:
 ${JSON.stringify(serveis, null, 2)}
 
 INFORME POLICIA LOCAL:
-${clean(informePoliciaLocal, 9000) || "No aportat"}
+${clean(informePoliciaLocal, 4500) || "No aportat"}
 
 INFORME MOSSOS:
-${clean(informeMossos, 9000) || "No aportat"}`;
+${clean(informeMossos, 4500) || "No aportat"}`;
 }
 
 async function callCloudflare(env, cfg, prompt) {
   if (!env.AI) throw new Error("Cloudflare AI binding missing");
   const response = await env.AI.run(cfg.cloudflareModel, {
-    prompt,
+    messages: [
+      { role: "system", content: "Return only valid JSON. No markdown. No prose outside JSON. Language: Catalan." },
+      { role: "user", content: prompt }
+    ],
+    temperature: 0.15,
     max_tokens: 4096
   });
   return response?.response || response?.result?.response || response?.text || JSON.stringify(response || {});
@@ -176,6 +206,7 @@ async function callGemini(cfg, prompt) {
 
 async function callGroq(cfg, prompt) {
   if (!cfg.groqKey) throw new Error("Groq key missing");
+  const shortPrompt = clean(prompt, 9000);
   const response = await fetch(cfg.groqUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + cfg.groqKey },
@@ -183,7 +214,7 @@ async function callGroq(cfg, prompt) {
       model: cfg.groqModel,
       messages: [
         { role: "system", content: "Return only valid JSON. Language: Catalan." },
-        { role: "user", content: prompt }
+        { role: "user", content: shortPrompt }
       ],
       temperature: 0.2,
       max_tokens: 4096,
