@@ -1,6 +1,29 @@
-/* SIPDA v7 · legacy agent actions disabled
-   The native Agent SIPDA panel now owns attachment, rendering and export UI.
-   Kept as a safe loader stub to avoid duplicate controls and visual overlaps. */
+/* SIPDA v7 · Agent SIPDA icon polish */
 (function(){
-  window.SIPDA_AGENT_ACTIONS={build:'sipda-v7-agent-actions-disabled-2026-05-22',active:false,reason:'integrated-in-native-agent-panel'};
+  const BUILD='sipda-agent-icons-chatgpt-style-2026-05-22';
+
+  function apply(){
+    const attach=document.getElementById('sipdaAgentAttach');
+    const send=document.getElementById('sipdaAgentSend');
+
+    if(attach && attach.dataset.sipdaIcon!=='plus'){
+      attach.innerHTML='<i data-lucide="plus"></i>';
+      attach.dataset.sipdaIcon='plus';
+      attach.title='Adjuntar fitxer';
+      attach.setAttribute('aria-label','Adjuntar fitxer');
+    }
+
+    if(send && send.dataset.sipdaIcon!=='arrow-up'){
+      send.innerHTML='<i data-lucide="arrow-up"></i>';
+      send.dataset.sipdaIcon='arrow-up';
+      send.title='Enviar';
+      send.setAttribute('aria-label','Enviar');
+    }
+
+    if(window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    window.SIPDA_AGENT_ACTIONS={build:BUILD,active:true,icons:'plus-arrow-up'};
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){apply();setInterval(apply,800);});
+  else {apply();setInterval(apply,800);}
 })();
