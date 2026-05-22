@@ -26,8 +26,11 @@
   function sidePanelGeometry(){
     var w=440;
     var h=screen.availHeight || window.innerHeight || 860;
-    var left=screen.availLeft!==undefined?screen.availLeft:0;
-    var top=screen.availTop!==undefined?screen.availTop:0;
+    var screenLeft=screen.availLeft!==undefined?screen.availLeft:0;
+    var screenTop=screen.availTop!==undefined?screen.availTop:0;
+    var screenWidth=screen.availWidth || window.outerWidth || 1440;
+    var left=Math.max(0,screenLeft + screenWidth - w);
+    var top=screenTop;
     return {w:w,h:h,left:left,top:top};
   }
   function openControlledGemWindow(){
@@ -88,7 +91,7 @@
         footer.appendChild(b);
       }
     }
-    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'floating-direct-left-fixed-panel'};
+    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'floating-direct-right-fixed-panel'};
   }
   function tick(){mount();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){tick();setInterval(tick,800);});else{tick();setInterval(tick,800);}
