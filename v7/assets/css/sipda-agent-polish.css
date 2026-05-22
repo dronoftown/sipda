@@ -1,0 +1,14 @@
+#sipdaAgentFeed>.sipda-agent-context{display:none!important}
+#sipdaAgentFeed>.sipda-agent-msg.ai:first-of-type{display:none!important}
+.sipda-agent-composer-wrap{border-top:1px solid #eef2f6!important;background:#fff!important;padding:14px 16px 16px!important}
+.sipda-agent-composer{display:grid!important;grid-template-columns:44px 1fr 44px!important;align-items:end!important;gap:10px!important;border:1px solid #d0d5dd!important;background:#fff!important;border-radius:28px!important;padding:10px!important;box-shadow:0 1px 2px rgba(16,24,40,.04)!important}
+.sipda-agent-composer:focus-within{border-color:#101828!important;box-shadow:0 0 0 4px rgba(16,24,40,.06)!important}
+.sipda-agent-iconbtn{width:44px!important;height:44px!important;border:0!important;background:transparent!important;color:#667085!important;border-radius:16px!important;display:grid!important;place-items:center!important;box-shadow:none!important}
+.sipda-agent-iconbtn:hover{background:#f8fafc!important;color:#101828!important}
+.sipda-agent-input{min-height:44px!important;max-height:140px!important;resize:none!important;border:0!important;outline:none!important;background:transparent!important;padding:11px 4px 8px!important;font-size:14px!important;line-height:1.45!important;color:#101828!important;box-shadow:none!important}
+.sipda-agent-input:focus{border:0!important;box-shadow:none!important}
+.sipda-agent-send{width:44px!important;height:44px!important;border:0!important;background:#101828!important;color:#fff!important;border-radius:16px!important;display:grid!important;place-items:center!important;box-shadow:0 4px 12px rgba(16,24,40,.16)!important}
+.sipda-agent-send:hover{background:#0054A6!important;box-shadow:0 10px 20px rgba(0,84,166,.20)!important;transform:translateY(-1px)!important}
+.sipda-agent-footer{margin-top:10px!important;padding:0 4px!important}
+.sipda-agent-chip{border-radius:999px!important;background:#101828!important;border-color:#101828!important;color:#fff!important}
+@media(max-width:760px){.sipda-agent-composer{grid-template-columns:42px 1fr 42px!important;border-radius:26px!important}.sipda-agent-send,.sipda-agent-iconbtn{width:42px!important;height:42px!important}}
