@@ -22,12 +22,34 @@
       'SERVEIS NORMALITZATS:\n'+JSON.stringify(rows,null,2)+'\n\n'+
       'TEXT BRUT DISPONIBLE:\n'+clean(window.SIPDA_LAST_PDF_TEXT||'').slice(0,12000);
   }
+  function openControlledGemWindow(){
+    var w=Math.min(1120,Math.max(920,screen.availWidth-120));
+    var h=Math.min(860,Math.max(720,screen.availHeight-90));
+    var left=Math.max(0,Math.round((screen.availWidth-w)/2));
+    var top=Math.max(0,Math.round((screen.availHeight-h)/2));
+    var features=[
+      'popup=yes',
+      'width='+w,
+      'height='+h,
+      'left='+left,
+      'top='+top,
+      'menubar=no',
+      'toolbar=no',
+      'location=no',
+      'status=no',
+      'scrollbars=yes',
+      'resizable=yes'
+    ].join(',');
+    var win=window.open(GEM_URL,'sipda_gem_window',features);
+    if(!win)win=window.open(GEM_URL,'_blank');
+    try{if(win)win.focus();}catch(e){}
+  }
   async function openGem(){
     var prompt=buildPrompt();
     try{await navigator.clipboard.writeText(prompt);}catch(e){}
-    window.open(GEM_URL,'_blank');
+    openControlledGemWindow();
     var status=document.getElementById('sipdaAgentStatus');
-    if(status)status.textContent='Context copiat. Enganxa’l al Gem SIPDA.';
+    if(status)status.textContent='Context copiat · Enganxa’l al Gem SIPDA';
   }
   function mount(){
     if(document.getElementById('sipdaGemBridgeBtn'))return;
@@ -40,7 +62,7 @@
     b.style.cssText='border:1px solid #101828;background:#101828;color:#fff;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:850;cursor:pointer;';
     b.addEventListener('click',openGem);
     footer.appendChild(b);
-    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL};
+    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'controlled-popup'};
   }
   function tick(){mount();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){tick();setInterval(tick,800);});else{tick();setInterval(tick,800);}
