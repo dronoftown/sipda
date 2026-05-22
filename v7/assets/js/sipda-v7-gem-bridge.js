@@ -51,18 +51,36 @@
     var status=document.getElementById('sipdaAgentStatus');
     if(status)status.textContent='Context copiat · Enganxa’l al Gem SIPDA';
   }
+  function bindFloatingButton(){
+    var btn=document.getElementById('sipdaGemFloatButton');
+    if(!btn || btn.dataset.gemDirect==='1')return;
+    var clone=btn.cloneNode(true);
+    btn.parentNode.replaceChild(clone,btn);
+    clone.dataset.gemDirect='1';
+    clone.title='Obrir Gem SIPDA';
+    clone.setAttribute('aria-label','Obrir Gem SIPDA');
+    clone.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      openGem();
+    },true);
+  }
   function mount(){
-    if(document.getElementById('sipdaGemBridgeBtn'))return;
-    var footer=document.querySelector('.sipda-agent-footer');
-    if(!footer)return;
-    var b=document.createElement('button');
-    b.id='sipdaGemBridgeBtn';
-    b.type='button';
-    b.textContent='Obrir Gem SIPDA';
-    b.style.cssText='border:1px solid #101828;background:#101828;color:#fff;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:850;cursor:pointer;';
-    b.addEventListener('click',openGem);
-    footer.appendChild(b);
-    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'controlled-popup'};
+    bindFloatingButton();
+    if(!document.getElementById('sipdaGemBridgeBtn')){
+      var footer=document.querySelector('.sipda-agent-footer');
+      if(footer){
+        var b=document.createElement('button');
+        b.id='sipdaGemBridgeBtn';
+        b.type='button';
+        b.textContent='Obrir Gem SIPDA';
+        b.style.cssText='border:1px solid #101828;background:#101828;color:#fff;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:850;cursor:pointer;';
+        b.addEventListener('click',openGem);
+        footer.appendChild(b);
+      }
+    }
+    window.SIPDA_GEM_BRIDGE={open:openGem,url:GEM_URL,mode:'floating-direct-popup'};
   }
   function tick(){mount();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){tick();setInterval(tick,800);});else{tick();setInterval(tick,800);}
