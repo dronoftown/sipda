@@ -12,7 +12,7 @@ function extract(tree,found=[]) {
     const place=Array.isArray(tree.location) ? tree.location[0] : tree.location;
     found.push({title:clean(tree.name),start:tree.startDate,end:tree.endDate||null,
       venue:clean(place?.name || (typeof place==='string'?place:''))||null,
-      url:String(tree.url||'').startsWith(SOURCE)?tree.url:null, source:SOURCE});
+      url:(()=>{try{const u=new URL(String(tree.url||''),SOURCE);return u.origin===SOURCE?u.href:null}catch{return null}})(), source:SOURCE});
   }
   for(const value of Object.values(tree)) if(value && typeof value==='object') extract(value,found);
   return found;
@@ -49,6 +49,7 @@ export default {async fetch(request){
   let response,html;
   try {
     response=await fetch(FEED,{headers:{accept:'text/html'},redirect:'follow',cf:{cacheTtl:0,cacheEverything:false}});
+    if(response.url && new URL(response.url).origin!==SOURCE) return reply({status:'unexpected_redirect'},502);
     if(!response.ok)return reply({status:'source_error',http_status:response.status,source:FEED},502);
     if(!(response.headers.get('content-type')||'').includes('text/html'))return reply({status:'unsupported_source_type'},502);
     html=await response.text();
