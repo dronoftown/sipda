@@ -18,18 +18,18 @@ function extract(tree,found=[]) {
   return found;
 }
 function inspectHtml(html) {
-  const scripts = [...html.matchAll(/<script\\b[^>]*\\bsrc\\s*=\\s*["']([^"']+)["']/gi)]
+  const scripts = [...html.matchAll(/<script\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi)]
     .map(m => {try {const u=new URL(m[1],SOURCE); return u.origin===SOURCE ? u.pathname : null} catch{return null}})
     .filter(Boolean);
-  const activityLinks = [...html.matchAll(/<a\\b[^>]*href\\s*=\\s*["']([^"']+)["']/gi)]
-    .map(m => {try {const u=new URL(m[1],SOURCE); return u.origin===SOURCE && /\\/(activitats|actividades|activities)\\//i.test(u.pathname) ? u.pathname : null} catch{return null}})
+  const activityLinks = [...html.matchAll(/<a\b[^>]*href\s*=\s*["']([^"']+)["']/gi)]
+    .map(m => {try {const u=new URL(m[1],SOURCE); return u.origin===SOURCE && /\/(activitats|actividades|activities)\//i.test(u.pathname) ? u.pathname : null} catch{return null}})
     .filter(Boolean);
-  const embeddedJson = [...html.matchAll(/<script\\b[^>]*type\\s*=\\s*["']application\\/json["'][^>]*>/gi)].length;
+  const embeddedJson = [...html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/json["'][^>]*>/gi)].length;
   const markers = {
-    jquery: /jquery(?:\\.min)?\\.js/i.test(html),
-    axios: /axios(?:\\.min)?\\.js/i.test(html),
-    fetchCalls: /\\bfetch\\s*\\(/.test(html),
-    ajaxCalls: /\\$\\.ajax\\s*\\(|\\$\\.get\\s*\\(/.test(html)
+    jquery: /jquery(?:\.min)?\.js/i.test(html),
+    axios: /axios(?:\.min)?\.js/i.test(html),
+    fetchCalls: /\bfetch\s*\(/.test(html),
+    ajaxCalls: /\$\.ajax\s*\(|\$\.get\s*\(/.test(html)
   };
   return {script_paths:[...new Set(scripts)].slice(0,30),activity_page_paths:[...new Set(activityLinks)].slice(0,15),embedded_json_scripts:embeddedJson,markers};
 }
