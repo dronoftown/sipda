@@ -11,3 +11,10 @@ Rutas previstas: /health, /diagnostic y /events?hours=72.
 El código está aislado en esta rama; **no está desplegado** y no modifica producción.
 
 Despliegue futuro: Worker ES Modules de Cloudflare, sujeto a comprobación del plan gratuito, permisos de extracción y revisión de logs de plataforma.
+## Validación de acceso (17 noviembre 2026)
+
+- GitHub Actions ejecutó 4/4 pruebas unitarias correctas.
+- La consulta HTTP automatizada a la fuente pública devolvió **403 Forbidden** desde GitHub Actions; el evento no se puede leer con ese acceso.
+- No se han almacenado eventos. El diagnóstico únicamente escribe metadatos técnicos en los logs de GitHub Actions.
+- No forzar acceso ni sortear protección anti-bot. Próximo requisito: obtener del Ayuntamiento una API/exportación estructurada y permiso de consumo automatizado (o una modalidad técnica aprobada).
+- El estado de disponibilidad de datos sigue siendo **no validado**. La rama permanece sin desplegar.
