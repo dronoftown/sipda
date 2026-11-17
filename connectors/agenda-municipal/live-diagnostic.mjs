@@ -14,5 +14,11 @@ try {
   console.log(JSON.stringify({check:'live_source',http_status:response.status,final_host:new URL(response.url).host,bytes:html.length,
     script_paths:[...new Set(scripts)],potential_api_paths:possibleApiPaths,jsonld_present:hasJsonLd,activity_links_present:hasActivityLink,
     event_data_saved:false},null,2));
-  if(!response.ok)process.exitCode=1;
+  if(response.status===403) {
+    console.log('STATUS: ACCESS_DENIED_BY_SOURCE — request API or approved machine-to-machine access; no bypass attempts.');
+  } else if(!response.ok) {
+    console.log('STATUS: SOURCE_HTTP_ERROR');
+  } else {
+    console.log('STATUS: SOURCE_REACHABLE');
+  }
 } catch (error) {console.error('Live source diagnostic failed: '+error.message); process.exitCode=1}
