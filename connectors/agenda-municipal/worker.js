@@ -17,6 +17,22 @@ function extract(tree,found=[]) {
   for(const value of Object.values(tree)) if(value && typeof value==='object') extract(value,found);
   return found;
 }
+function inspectHtml(html) {
+  const scripts = [...html.matchAll(/<script\\b[^>]*\\bsrc\\s*=\\s*["']([^"']+)["']/gi)]
+    .map(m => {try {const u=new URL(m[1],SOURCE); return u.origin===SOURCE ? u.pathname : null} catch{return null}})
+    .filter(Boolean);
+  const activityLinks = [...html.matchAll(/<a\\b[^>]*href\\s*=\\s*["']([^"']+)["']/gi)]
+    .map(m => {try {const u=new URL(m[1],SOURCE); return u.origin===SOURCE && /\\/(activitats|actividades|activities)\\//i.test(u.pathname) ? u.pathname : null} catch{return null}})
+    .filter(Boolean);
+  const embeddedJson = [...html.matchAll(/<script\\b[^>]*type\\s*=\\s*["']application\\/json["'][^>]*>/gi)].length;
+  const markers = {
+    jquery: /jquery(?:\\.min)?\\.js/i.test(html),
+    axios: /axios(?:\\.min)?\\.js/i.test(html),
+    fetchCalls: /\\bfetch\\s*\\(/.test(html),
+    ajaxCalls: /\\$\\.ajax\\s*\\(|\\$\\.get\\s*\\(/.test(html)
+  };
+  return {script_paths:[...new Set(scripts)].slice(0,30),activity_page_paths:[...new Set(activityLinks)].slice(0,15),embedded_json_scripts:embeddedJson,markers};
+}
 function fromHtml(html) {
   const events=[];
   for(const m of html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)){
@@ -39,7 +55,7 @@ export default {async fetch(request){
     if(html.length>3000000)return reply({status:'source_too_large'},502);
   } catch{return reply({status:'source_unavailable',source:FEED},502);}
   const events=fromHtml(html), checked_at=new Date().toISOString();
-  if(url.pathname==='/diagnostic')return reply({connector:'SIPDA-CON-001',checked_at,source:FEED,http_status:response.status,html_bytes:html.length,jsonld_events:events.length,client_side_rendering_possible:events.length===0,storage:false});
+  if(url.pathname==='/diagnostic')return reply({connector:'SIPDA-CON-001',checked_at,source:FEED,http_status:response.status,html_bytes:html.length,jsonld_events:events.length,inspection:inspectHtml(html),client_side_rendering_possible:events.length===0,storage:false});
   if(events.length===0)return reply({connector:'SIPDA-CON-001',status:'extraction_unverified',message:'No structured events in HTML; site may use dynamic API. Not evidence of zero events.',events:[],source:FEED,checked_at,storage:false},503);
   const now=Date.now();
   return reply({connector:'SIPDA-CON-001',status:'ok',source:FEED,checked_at,window_hours:hours,storage:false,events:events.filter(e=>{
