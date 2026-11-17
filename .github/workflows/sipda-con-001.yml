@@ -22,3 +22,5 @@ jobs:
         run: node --test connectors/agenda-municipal/worker.test.mjs
       - name: Verify syntax
         run: node --check connectors/agenda-municipal/worker.js
+      - name: Inspect municipal source (no event storage)
+        run: node connectors/agenda-municipal/live-diagnostic.mjs
